@@ -1,0 +1,69 @@
+{
+  "project": {
+    "name": "TaskFlow",
+    "description": "Task management SaaS with team collaboration, real-time updates, and Kanban boards",
+    "created_at": "2026-03-12T10:00:00Z",
+    "tech_stack": "Next.js 14 + TypeScript + Prisma + PostgreSQL + TailwindCSS",
+    "type": "new"
+  },
+  "phase": "EXECUTE",
+  "last_updated_at": "2026-03-12T14:35:00Z",
+  "phases_completed": ["DISCOVER", "PLAN", "ARCHITECT", "SPRINT_PREP"],
+  "current_sprint": 2,
+  "total_sprints": 4,
+  "sprints": [
+    {
+      "id": 1,
+      "theme": "Foundation & Auth",
+      "stories_total": 6,
+      "stories_completed": 6,
+      "status": "COMPLETE",
+      "quality_gate": "PASS"
+    },
+    {
+      "id": 2,
+      "theme": "Core Task Management",
+      "stories_total": 8,
+      "stories_completed": 5,
+      "status": "IN_PROGRESS",
+      "quality_gate": null
+    }
+  ],
+  "ralph": {
+    "total_iterations": 34,
+    "max_iterations_per_story": 5,
+    "max_iterations_per_sprint": 40,
+    "circuit_breaker_threshold": 3,
+    "completion_promise": "STORY_COMPLETE",
+    "current_story": "STORY-2.6",
+    "current_attempt": 1
+  },
+  "deliverables": {
+    "business_brief": ".bmad-ralph/docs/business-brief.md",
+    "prd": ".bmad-ralph/docs/prd.md",
+    "architecture": ".bmad-ralph/docs/architecture.md",
+    "sprint_stories": [
+      ".bmad-ralph/sprints/sprint-1.md",
+      ".bmad-ralph/sprints/sprint-2.md",
+      ".bmad-ralph/sprints/sprint-3.md",
+      ".bmad-ralph/sprints/sprint-4.md"
+    ],
+    "implementations": [
+      "STORY-1.1", "STORY-1.2", "STORY-1.3",
+      "STORY-1.4", "STORY-1.5", "STORY-1.6",
+      "STORY-2.1", "STORY-2.2", "STORY-2.3",
+      "STORY-2.4", "STORY-2.5"
+    ],
+    "reviews": [
+      ".bmad-ralph/logs/review-sprint-1.md"
+    ]
+  },
+  "metrics": {
+    "stories_completed": 11,
+    "stories_total": 28,
+    "ralph_iterations_total": 34,
+    "quality_gate_passes": 1,
+    "quality_gate_failures": 0,
+    "escalations_to_architect": 1
+  }
+}

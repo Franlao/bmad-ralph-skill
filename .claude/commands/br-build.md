@@ -17,6 +17,20 @@ If `$ARGUMENTS` contains:
 - `parallel` → Run parallel-group stories simultaneously with subagents
 - Nothing → Run the current sprint
 
+## Phase 0: Sprint Branch
+
+1. Read `project.base_branch` from `.bmad-ralph/state.json`
+2. Check if branch `bmad/sprint-<current>` exists
+3. If **not**: create it from current HEAD:
+   ```bash
+   git checkout -b bmad/sprint-<current>
+   ```
+4. If **yes**: switch to it:
+   ```bash
+   git checkout bmad/sprint-<current>
+   ```
+5. All story commits happen on this sprint branch
+
 ## Phase 1: Load Sprint Context
 
 1. Read `.bmad-ralph/sprints/sprint-<current>.md` for all stories
@@ -81,9 +95,16 @@ After all stories attempted:
 1. Run the **Sprint Verification** command from the sprint file (full build + lint + test)
 2. If ALL pass:
    - Log: `[<timestamp>] SPRINT-<N> ✓ COMPLETE`
+   - **Merge sprint branch back to base:**
+     ```bash
+     git checkout <base_branch>
+     git merge bmad/sprint-<N> --no-ff -m "merge: Sprint <N> complete — <sprint theme>"
+     ```
+   - If merge conflicts → report them and ask the user to resolve manually
    - Update state: increment `current_sprint`, set phase to `REVIEW`
    - Say: "Sprint <N> complete! Run `/project:br-review` for quality gate."
 3. If some stories were ESCALATED:
+   - Still merge what was completed (partial merge is OK)
    - List the escalated stories
    - Say: "Sprint <N> partially complete. <X> stories escalated. Run `/project:br-review` to assess, or `/project:br-build story STORY-X.Y` to retry specific stories."
 

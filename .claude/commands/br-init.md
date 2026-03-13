@@ -23,6 +23,13 @@ Append to `.gitignore` (create if needed):
 .bmad-ralph/logs/
 ```
 
+## Step 1c: Initialize Git
+
+Ensure the project is a git repository:
+1. If `.git/` does not exist, run `git init` and create an initial commit
+2. Record the current branch name in state.json as `project.base_branch`
+3. This is the branch where all sprint branches will merge back to
+
 ## Step 2: Analyze Existing Project
 
 Before creating state, analyze the current project:
@@ -44,7 +51,8 @@ Write `.bmad-ralph/state.json` with this structure:
     "description": "$ARGUMENTS",
     "created_at": "<ISO timestamp>",
     "tech_stack": "<detected>",
-    "type": "new|existing_feature|refactor"
+    "type": "new|existing_feature|refactor",
+    "base_branch": "<current git branch name, e.g. main>"
   },
   "phase": "DISCOVER",
   "phases_completed": [],
@@ -104,24 +112,14 @@ Write `.bmad-ralph/docs/brief-template.md`:
 <What are we explicitly NOT building?>
 ```
 
-## Step 5: Update CLAUDE.md
+## Step 5: Install CLAUDE.md
 
-If CLAUDE.md exists, append the BMAD-Ralph section. If not, create it with:
+If `.claude/templates/CLAUDE.md` exists (installed by the skill), use it as the base template.
 
-```markdown
-# BMAD-Ralph Configuration
+- If `CLAUDE.md` already exists in the project root → append the BMAD-Ralph section from the template
+- If `CLAUDE.md` does not exist → copy the template as `CLAUDE.md`
 
-## State
-- State file: .bmad-ralph/state.json
-- Docs: .bmad-ralph/docs/
-- Sprint stories: .bmad-ralph/sprints/
-
-## Development Rules
-- ALWAYS read and understand code BEFORE modifying it
-- ALWAYS run tests after implementing a story
-- NEVER modify .bmad-ralph/state.json manually — use br commands
-- Commit after each completed story with conventional commits
-```
+This gives Claude Code the project conventions for BMAD-Ralph (git workflow, safety rules, file structure).
 
 ## Step 6: Confirm Initialization
 

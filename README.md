@@ -288,7 +288,7 @@ INIT → DISCOVER → PLAN → ARCHITECT → SPRINT → EXECUTE → REVIEW → D
 
 ```
 .claude/
-├── commands/          ← 14 slash commands
+├── commands/          ← 21 slash commands
 │   ├── br.md              Orchestrateur principal
 │   ├── br-init.md         Initialisation
 │   ├── br-discover.md     Phase decouverte
@@ -302,7 +302,14 @@ INIT → DISCOVER → PLAN → ARCHITECT → SPRINT → EXECUTE → REVIEW → D
 │   ├── br-status.md       Dashboard
 │   ├── br-debug.md        Diagnostic
 │   ├── br-fix.md          Auto-reparation
-│   └── br-logs.md         Viewer de logs
+│   ├── br-logs.md         Viewer de logs
+│   ├── br-rollback.md     Rollback stories/sprints
+│   ├── br-config.md       Configuration (model, limites)
+│   ├── br-update.md       Mise a jour du skill
+│   ├── br-test.md         Lanceur de tests
+│   ├── br-metrics.md      Analytics de performance
+│   ├── br-scope.md        Gestion du scope
+│   └── br-deploy.md       Artefacts de deploiement
 ├── agents/            ← 2 agents specialises
 │   ├── br-developer.md    Agent dev autonome (sonnet, bypassPermissions)
 │   └── br-qa.md           Agent QA read-only (sonnet, bypassPermissions)
@@ -310,7 +317,9 @@ INIT → DISCOVER → PLAN → ARCHITECT → SPRINT → EXECUTE → REVIEW → D
 │   ├── br-guard.sh        Protection fichiers sensibles + commandes dangereuses
 │   ├── br-monitor.sh      Log automatique de toute activite
 │   └── br-post-edit.sh    Auto-format apres chaque edit
-└── settings.json      ← Configuration des hooks
+├── templates/
+│   └── CLAUDE.md          Conventions BMAD-Ralph pour le projet
+└── settings.json      ← Configuration des hooks (guard + monitor + auto-format)
 ```
 
 ### Ce que le skill cree dans ton projet (`.bmad-ralph/`)

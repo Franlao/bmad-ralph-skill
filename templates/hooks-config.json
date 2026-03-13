@@ -20,6 +20,15 @@
             "command": "bash .claude/hooks/br-post-edit.sh"
           }
         ]
+      },
+      {
+        "matcher": "Bash|Edit|Write|Agent",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/br-monitor.sh"
+          }
+        ]
       }
     ]
   }

@@ -123,61 +123,162 @@ INIT → DISCOVER → PLAN → ARCHITECT → SPRINT → EXECUTE → REVIEW → D
 
 ---
 
-## Toutes les commandes
+## Toutes les commandes et comment les utiliser
 
 ### Workflow principal
 
-| Commande | Description |
-|----------|-------------|
-| `/project:br-init <desc>` | Initialiser un projet |
-| `/project:br-discover` | Phase decouverte (4 agents paralleles) |
-| `/project:br-plan` | Generer le PRD |
-| `/project:br-architect` | Designer l'architecture |
-| `/project:br-sprint` | Decouper en stories |
-| `/project:br-build` | Executer le sprint courant |
-| `/project:br-review` | Quality gate |
-| `/project:br-auto` | Toutes les phases BMAD d'un coup (s'arrete avant build) |
+| Commande | Description | Quand l'utiliser |
+|----------|-------------|------------------|
+| `/project:br-init <desc>` | Initialiser un projet | **En premier.** Decris ton projet en une phrase entre guillemets. |
+| `/project:br-discover` | Phase decouverte (4 agents paralleles) | Apres init. Analyse le marche, la concurrence et le codebase. |
+| `/project:br-plan` | Generer le PRD | Apres discover. Cree le document produit avec toutes les user stories. |
+| `/project:br-architect` | Designer l'architecture | Apres plan. Genere le schema DB, les API, l'arborescence fichiers. |
+| `/project:br-sprint` | Decouper en stories | Apres architect. Cree les instructions detaillees pour chaque story. |
+| `/project:br-build` | Executer le sprint courant | Apres sprint. Lance Ralph qui code chaque story en autonome. |
+| `/project:br-review` | Quality gate | Apres build. 4 agents QA verifient le code (secu, perf, archi). |
+| `/project:br-auto` | Toutes les phases BMAD d'un coup | **Le raccourci.** Fait discover+plan+architect+sprint d'un coup, s'arrete avant build pour te laisser relire. |
+
+#### Exemples concrets
+
+```bash
+# Projet Python from scratch
+/project:br-init "API FastAPI de gestion de factures avec PDF et paiements Stripe"
+/project:br-auto
+# (relire les docs generes dans .bmad-ralph/docs/)
+/project:br-build auto
+
+# Projet TypeScript from scratch
+/project:br-init "App Next.js de suivi de budget personnel avec graphiques et export CSV"
+/project:br-auto
+/project:br-build auto
+
+# Nouvelle feature sur un projet existant
+/project:br-init "Ajouter un systeme de notifications push au projet"
+/project:br-auto
+/project:br-build
+
+# Refactoring
+/project:br-init "Migrer de JavaScript a TypeScript tout le dossier src/"
+/project:br-auto
+/project:br-build auto
+```
+
+---
 
 ### Options de build
 
-| Commande | Description |
-|----------|-------------|
-| `/project:br-build` | Sprint courant |
-| `/project:br-build auto` | Tous les sprints a la suite |
-| `/project:br-build parallel` | Stories parallelisees avec subagents |
-| `/project:br-build story STORY-2.3` | Une story specifique |
+| Commande | Description | Quand l'utiliser |
+|----------|-------------|------------------|
+| `/project:br-build` | Sprint courant uniquement | Tu veux avancer sprint par sprint et reviewer entre chaque. |
+| `/project:br-build auto` | Tous les sprints a la suite | **Tu pars et tu laisses tourner.** Ralph enchaine tous les sprints avec review automatique entre chaque. |
+| `/project:br-build parallel` | Stories parallelisees avec subagents | Projets avec beaucoup de stories independantes. Plus rapide mais plus gourmand en tokens. |
+| `/project:br-build story STORY-2.3` | Une story specifique | Tu veux relancer ou tester une seule story. |
+
+#### Exemples concrets
+
+```bash
+# Mode prudent : sprint par sprint
+/project:br-build              # sprint 1
+/project:br-review             # verifier
+/project:br-build              # sprint 2 (auto-incremente)
+/project:br-review
+
+# Mode autonome total : tout d'un coup
+/project:br-build auto         # tous les sprints, tu peux partir
+
+# Relancer une story qui a echoue
+/project:br-build story STORY-1.4
+
+# Mode rapide avec parallelisation
+/project:br-build parallel
+```
+
+---
 
 ### Monitoring et debug
 
-| Commande | Description |
-|----------|-------------|
-| `/project:br-status` | Dashboard visuel du projet |
-| `/project:br-logs` | Resume de tous les logs |
-| `/project:br-logs tail` | Dernieres 10 lignes (check rapide) |
-| `/project:br-logs errors` | Uniquement les erreurs |
-| `/project:br-logs sprint 1` | Log du sprint 1 |
-| `/project:br-logs escalations` | Stories en escalation |
-| `/project:br-debug` | Diagnostic complet (7 health checks) |
-| `/project:br-debug story STORY-X.Y` | Diagnostic cible sur une story |
+| Commande | Description | Quand l'utiliser |
+|----------|-------------|------------------|
+| `/project:br-status` | Dashboard visuel du projet | **A tout moment.** Voir la progression, le sprint courant, les stories faites. |
+| `/project:br-logs` | Resume de tous les logs | Vue d'ensemble de ce qui s'est passe. |
+| `/project:br-logs tail` | Dernieres 10 lignes | **Check rapide.** Tu reviens et tu veux savoir ce qui vient de se passer. |
+| `/project:br-logs errors` | Uniquement les erreurs | Quelque chose a echoue, tu veux comprendre pourquoi. |
+| `/project:br-logs sprint 1` | Log d'un sprint specifique | Voir le detail d'execution d'un sprint en particulier. |
+| `/project:br-logs escalations` | Stories en escalation | Voir les stories qui ont echoue 3 fois (circuit breaker). |
+| `/project:br-debug` | Diagnostic complet (7 health checks) | **Quand ca bloque.** Verifie state.json, git, fichiers, dependances. |
+| `/project:br-debug story STORY-X.Y` | Diagnostic cible sur une story | Comprendre pourquoi UNE story specifique echoue. |
+
+#### Exemples concrets
+
+```bash
+# Tu reviens apres une pause, tu veux savoir ou ca en est
+/project:br-status
+
+# Ralph a tourne, tu veux un check rapide
+/project:br-logs tail
+
+# Quelque chose a plante
+/project:br-logs errors
+/project:br-debug
+
+# Une story specifique echoue en boucle
+/project:br-debug story STORY-2.3
+```
+
+---
 
 ### Reparation
 
-| Commande | Description |
-|----------|-------------|
-| `/project:br-fix` | Auto-reparer tous les problemes detectes |
-| `/project:br-fix state` | Resynchroniser state.json avec git |
-| `/project:br-fix retry STORY-X.Y` | Retry propre d'une story echouee |
-| `/project:br-fix rewrite STORY-X.Y` | Reecrire les instructions d'une story |
-| `/project:br-fix clean` | Revert les changements non commites |
+| Commande | Description | Quand l'utiliser |
+|----------|-------------|------------------|
+| `/project:br-fix` | Auto-reparer tous les problemes | **Premier reflexe quand ca bloque.** Detecte et corrige les problemes courants. |
+| `/project:br-fix state` | Resynchroniser state.json avec git | Le state.json est desynchronise (stories marquees "done" mais pas commitees, ou l'inverse). |
+| `/project:br-fix retry STORY-X.Y` | Retry propre d'une story | Relance une story echouee apres avoir reset son compteur d'echecs. |
+| `/project:br-fix rewrite STORY-X.Y` | Reecrire les instructions d'une story | La story echoue parce que ses instructions sont mauvaises. Reecrit les instructions puis retry. |
+| `/project:br-fix clean` | Revert les changements non commites | Ralph a laisse des fichiers modifies mais pas commites. Nettoie tout. |
+
+#### Exemples concrets
+
+```bash
+# Quelque chose ne va pas, je sais pas quoi
+/project:br-fix
+
+# state.json dit sprint 2 mais git montre que sprint 2 est deja fini
+/project:br-fix state
+
+# STORY-2.3 a echoue 3 fois, je veux retenter
+/project:br-fix retry STORY-2.3
+
+# Les instructions de la story sont mauvaises, il faut les reecrire
+/project:br-fix rewrite STORY-2.3
+
+# Ralph a laisse du bazar, je veux repartir propre
+/project:br-fix clean
+```
+
+---
 
 ### Utilitaires
 
-| Commande | Description |
-|----------|-------------|
-| `/project:br` | Orchestrateur intelligent (detecte quoi faire) |
-| `/project:br status` | Raccourci pour br-status |
-| `/project:br auto` | Raccourci pour br-auto |
-| `/project:br-resume` | Reprendre apres interruption |
+| Commande | Description | Quand l'utiliser |
+|----------|-------------|------------------|
+| `/project:br` | Orchestrateur intelligent | **Tu sais pas quoi faire.** Il lit le state et te dit la prochaine etape. |
+| `/project:br status` | Raccourci pour br-status | Meme chose que br-status. |
+| `/project:br auto` | Raccourci pour br-auto | Meme chose que br-auto. |
+| `/project:br-resume` | Reprendre apres interruption | **Tu as ferme le terminal** ou Claude a crash. Reprend exactement ou c'etait. |
+
+#### Exemples concrets
+
+```bash
+# Je sais plus ou j'en suis
+/project:br
+
+# Nouvelle session Claude apres avoir ferme le terminal
+/project:br-resume
+
+# Apres un crash ou une erreur de rate limit
+/project:br-resume
+```
 
 ---
 

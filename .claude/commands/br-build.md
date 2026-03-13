@@ -54,6 +54,10 @@ If dependencies not met → skip, will retry later
 Follow the Implementation Instructions step by step.
 Create/modify the exact files listed.
 Follow the architecture document for patterns and conventions.
+
+If MCP tools are available (context7, etc.), use them to look up
+current API docs BEFORE implementing — especially for libraries
+you're unsure about. This prevents errors from outdated API knowledge.
 ```
 
 ### Step C — Verify

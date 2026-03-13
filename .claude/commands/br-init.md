@@ -121,11 +121,89 @@ If `.claude/templates/CLAUDE.md` exists (installed by the skill), use it as the 
 
 This gives Claude Code the project conventions for BMAD-Ralph (git workflow, safety rules, file structure).
 
-## Step 6: Confirm Initialization
+## Step 6: Install MCP Servers
+
+Auto-install the 3 essential MCPs + stack-specific MCPs. This gives Ralph access to live library docs, structured reasoning, and web content during execution.
+
+### 6a: Essential MCPs (always install)
+
+**Try CLI method first:**
+```bash
+claude mcp add context7 -- npx -y @upstash/context7-mcp@latest
+claude mcp add sequential-thinking -- npx -y @modelcontextprotocol/server-sequential-thinking
+claude mcp add fetch -- npx -y @modelcontextprotocol/server-fetch
+```
+
+**If CLI method fails**, create/update `.mcp.json` in project root.
+
+For Windows:
+```json
+{
+  "mcpServers": {
+    "context7": {
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "@upstash/context7-mcp@latest"]
+    },
+    "sequential-thinking": {
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "@modelcontextprotocol/server-sequential-thinking"]
+    },
+    "fetch": {
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "@modelcontextprotocol/server-fetch"]
+    }
+  }
+}
+```
+
+For Linux/Mac:
+```json
+{
+  "mcpServers": {
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp@latest"]
+    },
+    "sequential-thinking": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
+    },
+    "fetch": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-fetch"]
+    }
+  }
+}
+```
+
+### 6b: Stack-specific MCPs (install if detected)
+
+| If detected | Install |
+|-------------|---------|
+| `package.json` has `eslint` | `claude mcp add eslint -- npx -p @eslint/mcp@latest -p jiti -c mcp` |
+| `package.json` has `vitest` | `claude mcp add vitest -- npx -y @djankies/vitest-mcp` |
+| `.git/config` has `github.com` | `claude mcp add --transport http github https://api.githubcopilot.com/mcp/` |
+| Project uses PostgreSQL | `claude mcp add postgres -- npx -y @bytebase/dbhub --dsn "${DATABASE_URL}"` |
+
+### 6c: Display summary
+
+```
+MCP Servers installed:
+  [x] context7              — Live library documentation
+  [x] sequential-thinking   — Structured reasoning for complex problems
+  [x] fetch                 — Read any web page as markdown
+  [x] eslint                — JS/TS linting (detected)
+
+  Manage MCPs later: /br-mcp list
+```
+
+**Note**: The user can manage MCPs later with `/br-mcp list` or `/br-mcp add/remove`.
+
+## Step 7: Confirm Initialization
 
 Display the detected project info and ask the user to:
 1. Confirm or correct the tech stack
 2. Fill in the project brief (or provide a description)
 3. Decide if this is a new project, new feature, or refactor
 
-Then tell them: "Run `/project:br-discover` to start the discovery phase, or `/project:br auto` to run all planning phases automatically."
+Then tell them: "Run `/br-discover` to start the discovery phase, or `/br-auto` to run all planning phases automatically."

@@ -35,8 +35,11 @@ If `$ARGUMENTS` contains:
 
 1. Read `.bmad-ralph/sprints/sprint-<current>.md` for all stories
 2. Read `.bmad-ralph/docs/architecture.md` for reference
-3. Read git log to detect already-completed stories (by commit message pattern `feat(sprint-X): STORY-X.Y`)
-4. Build a TODO list of remaining stories
+3. Read `.bmad-ralph/docs/prd.md` to understand the intent behind each story
+4. Read git log to detect already-completed stories (by commit message pattern `feat(sprint-X): STORY-X.Y`)
+5. **Scan the existing codebase** — understand what's already there before writing anything new
+6. **Read the dependency manifest** (`package.json`, `cargo.toml`, `pyproject.toml`, etc.) — know what libraries are actually available
+7. Build a TODO list of remaining stories using **TodoWrite** — one todo per story, update each as `in_progress` / `completed` in real time
 
 ## Phase 2: Execute Stories (The Ralph Loop)
 
@@ -62,14 +65,17 @@ you're unsure about. This prevents errors from outdated API knowledge.
 
 ### Step C — Verify
 ```
-Run the Verification Command from the story.
+1. Run the Verification Command from the story.
+2. Run lint and typecheck (detect commands from package.json scripts or project config).
+   Fix any errors before moving on — do not skip or suppress.
 ```
 
 ### Step D — Evaluate Result
 
 **If verification PASSES:**
-1. Git commit: `git add <files> && git commit -m "feat(sprint-<N>): STORY-<N.M> <title>"`
-2. Log success to `.bmad-ralph/logs/sprint-<N>.log`:
+1. **Self-critique before committing** — ask: Did I implement ALL acceptance criteria? Did I respect the architecture? Did I only touch the files listed in the story (or have a clear reason for any extra files)?
+2. Git commit: `git add <files> && git commit -m "feat(sprint-<N>): STORY-<N.M> <title>"`
+3. Log success to `.bmad-ralph/logs/sprint-<N>.log`:
    ```
    [<timestamp>] STORY-<N.M> ✓ PASS (iteration <i>)
    ```
@@ -79,14 +85,19 @@ Run the Verification Command from the story.
 4. Move to next story
 
 **If verification FAILS:**
-1. Read the error output carefully
-2. Log the error to `.bmad-ralph/logs/sprint-<N>.log`:
+1. **Step back — reason before touching code:**
+   - Is the root cause in the code I just wrote?
+   - Is it a missing dependency, a wrong import, or a type mismatch?
+   - Did I miss reading a file that defines something I'm using?
+   - Is this an environment issue (missing env var, missing package) vs a code issue?
+2. Read the FULL error output — do not skim
+3. Log the error to `.bmad-ralph/logs/sprint-<N>.log`:
    ```
    [<timestamp>] STORY-<N.M> ✗ FAIL (iteration <i>): <error summary>
    ```
-3. **Circuit Breaker Check:**
+4. **Circuit Breaker Check:**
    - Count how many times this story has failed
-   - If < 3 failures → analyze error, fix, retry from Step B
+   - If < 3 failures → fix the root cause (not a patch), retry from Step B
    - If = 3 failures → **ESCALATE** (see Escalation Protocol)
 
 ### Step E — Between Stories

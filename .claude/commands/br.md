@@ -75,3 +75,12 @@ Then list completed deliverables with checkmarks and pending ones with empty box
 4. **Track token cost estimates** in state.json for budget awareness
 5. **Auto-save state** after every phase transition
 6. **Update `last_updated_at`** in state.json after every state change
+
+## Living Plan Management
+
+Maintain an up-to-date mental model of the project plan. Whenever you learn new information that could change the scope or direction (failed stories, escalations, architecture amendments, user feedback), reassess the plan BEFORE continuing execution. It is better to pause and re-evaluate than to push forward on an outdated plan.
+
+Specifically:
+- After each phase completes, review whether the next phase still makes sense given what was learned
+- After a quality gate FAIL, review the entire remaining plan — not just the failed sprint
+- If the user provides new requirements mid-project, evaluate impact on ALL remaining phases before proceeding

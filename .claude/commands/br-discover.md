@@ -11,9 +11,12 @@ Read `.bmad-ralph/state.json`. Verify phase is `DISCOVER`. If not, explain the c
 ## Mission
 Launch **4 parallel research subagents** to analyze the project from every angle. This is the BMAD Business Analyst role.
 
+## Critical Rule
+**NEVER guess or assume — every finding must be rooted in actual research.** If you cannot find information through codebase exploration or web search, state what is unknown rather than inventing an answer. Wrong assumptions in discovery propagate into wrong architecture, wrong stories, and failed sprints.
+
 ## Execute 4 Parallel Research Streams
 
-Use the Agent tool to launch these 4 agents **simultaneously** (in a single message with 4 tool calls).
+**MAXIMIZE EFFICIENCY**: Launch all 4 agents **simultaneously** in a single message with 4 tool calls. Never make sequential agent calls when they can be batched.
 
 **IMPORTANT**: Set `mode: "bypassPermissions"` on ALL Agent calls so they run fully autonomously without prompting the user.
 
@@ -47,6 +50,8 @@ Analyze the project in .bmad-ralph/state.json and the existing codebase:
 - Estimate complexity (simple/medium/complex/very complex)
 - Identify potential performance bottlenecks
 - List required third-party dependencies
+- Read package.json/cargo.toml/pyproject.toml to know EXACTLY what is already installed
+- Use web search if you need current API docs or latest versions — never assume from memory
 Write your findings to .bmad-ralph/docs/discovery-technical.md
 ```
 

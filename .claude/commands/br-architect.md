@@ -19,8 +19,13 @@ Read:
 - `.bmad-ralph/docs/discovery-codebase.md` (if exists)
 - Existing codebase structure and patterns
 
-## Critical Rule
-**The architecture MUST be concrete enough for autonomous implementation.** Ralph Wiggum will execute this without human guidance. Every decision must be made here — no ambiguity.
+## Critical Rules
+
+1. **The architecture MUST be concrete enough for autonomous implementation.** Ralph Wiggum will execute this without human guidance. Every decision must be made here — no ambiguity.
+
+2. **NEVER guess APIs, library signatures, or config formats from memory.** If you are unsure about a library's API, use web search or MCP tools (context7) to look up the current documentation. Wrong API assumptions cause cascading failures in every sprint.
+
+3. **Check what already exists before designing.** Read the codebase thoroughly. If a pattern, component, or utility already exists that serves the purpose, REUSE it — do not design a replacement. Verify the dependency manifest (`package.json`, `cargo.toml`, etc.) to know what libraries are actually available.
 
 ## Generate Architecture Document
 
@@ -124,6 +129,8 @@ After writing the architecture, validate it by checking:
 - [ ] The dependency graph has no circular dependencies
 - [ ] The testing strategy covers all critical paths
 - [ ] Auth is specified for every protected resource
+- [ ] Every library referenced actually exists in the dependency manifest (or is listed as "to install")
+- [ ] Existing codebase patterns are reused — not replaced without justification
 
 ## After Completion
 

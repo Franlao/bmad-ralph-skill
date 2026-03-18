@@ -84,6 +84,14 @@ Check:
 Write findings to .bmad-ralph/logs/review-architecture-sprint-<N>.md
 ```
 
+## Step 3.5: Refactoring Assessment
+
+Before synthesizing, assess whether the sprint's code needs refactoring:
+- Are there duplicated patterns across stories that should be extracted into shared utilities?
+- Are any files growing too large and should be split?
+- Are there inconsistencies in naming, error handling, or patterns between stories?
+If yes, add refactoring items as "Warning" level issues in the synthesis.
+
 ## Step 4: Synthesize Review
 
 After all agents complete, read all 4 review documents and create:

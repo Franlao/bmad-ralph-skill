@@ -148,9 +148,35 @@ if [ -f "${SCRIPT_DIR}/templates/CLAUDE.md" ]; then
     echo -e "  ${GREEN}+${NC} templates/CLAUDE.md"
 fi
 
-# Resolve hook paths for this scope (template uses the __BR_HOOKS_DIR__ placeholder)
+# Resolve the bash executable used to run hooks (__BR_BASH__ placeholder).
+# Priority: BR_BASH env override > Git Bash on Windows (absolute path) > plain "bash".
+# On Windows, "bash" on the PATH often resolves to a broken WSL stub — hooks would
+# then fail on every tool call. Pin them to the bash actually running this installer.
+if [ -n "${BR_BASH:-}" ]; then
+    BASH_BIN="$BR_BASH"
+else
+    case "$(uname -s 2>/dev/null)" in
+        MINGW*|MSYS*|CYGWIN*)
+            BASH_BIN="$(cygpath -m "$(command -v bash)" 2>/dev/null || command -v bash)"
+            ;;
+        *)  BASH_BIN="bash" ;;
+    esac
+fi
+# Normalize to forward slashes (valid on Windows, valid in JSON) and add
+# JSON-escaped quotes if the path contains spaces.
+BASH_BIN=$(printf '%s' "$BASH_BIN" | tr '\\' '/')
+case "$BASH_BIN" in
+    *" "*) BASH_REPL='\"'"$BASH_BIN"'\"' ;;
+    *)     BASH_REPL="$BASH_BIN" ;;
+esac
+BASH_REPL_ESC=$(printf '%s' "$BASH_REPL" | sed 's/[\\&]/\\&/g')
+[ "$BASH_BIN" != "bash" ] && echo -e "${BLUE}Hook shell:    ${BASH_BIN}${NC} (override with BR_BASH=/path/to/bash)"
+
+# Resolve hook paths for this scope (template uses __BR_HOOKS_DIR__ / __BR_BASH__ placeholders)
 RESOLVED_HOOKS_CONFIG="${INSTALL_DIR}/templates/hooks-config.resolved.json"
-sed "s|__BR_HOOKS_DIR__|${HOOKS_DIR_REF}|g" "${SCRIPT_DIR}/templates/hooks-config.json" > "$RESOLVED_HOOKS_CONFIG"
+sed -e "s|__BR_HOOKS_DIR__|${HOOKS_DIR_REF}|g" \
+    -e "s|__BR_BASH__|${BASH_REPL_ESC}|g" \
+    "${SCRIPT_DIR}/templates/hooks-config.json" > "$RESOLVED_HOOKS_CONFIG"
 
 # Install hooks config
 echo -e "${YELLOW}Configuring hooks...${NC}"

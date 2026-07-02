@@ -31,6 +31,22 @@ bash ~/bmad-ralph-skill/install.sh --global
 
 L'installeur copie les commandes, agents, hooks, et configure les settings automatiquement.
 
+### Windows
+
+Lance l'installeur **depuis Git Bash** (pas PowerShell/cmd). Sur beaucoup de
+machines Windows, la commande `bash` du PATH pointe vers un stub WSL casse —
+l'installeur detecte ce cas et epingle les hooks sur le chemin absolu du Git
+Bash qui l'execute. Pour forcer un chemin precis :
+
+```bash
+BR_BASH="C:/Program Files/Git/bin/bash.exe" bash ~/bmad-ralph-skill/install.sh --project
+```
+
+Note : un chemin absolu est specifique a ta machine. Si le settings genere est
+partage en equipe (commit de `.claude/settings.json`), deplace le bloc `hooks`
+vers `.claude/settings.local.json` (non commite) pour ne pas casser les hooks
+des collegues.
+
 ---
 
 ## Demarrage rapide (3 commandes)

@@ -10,7 +10,7 @@ Automatically repair common issues detected by `/br-debug`.
 If `$ARGUMENTS` is provided:
 - "state" → fix only state.json inconsistencies
 - "retry STORY-X.Y" → clean up and retry a specific failed story
-- "clean" → revert uncommitted changes and reset to last good state
+- "clean" → stash uncommitted changes (recoverable) and return to last good state
 - "rewrite STORY-X.Y" → rewrite a story's instructions based on escalation analysis, then retry
 - empty → run full diagnostic first, then fix everything fixable
 
@@ -35,8 +35,12 @@ When there are uncommitted changes from an interrupted loop:
 2. Try to identify which story was in progress (match files to story file lists)
 3. Run that story's verification command
 4. If it passes → commit it as that story
-5. If it fails → `git checkout .` to revert, log the failure
-6. Log: `[FIX] Interrupted story <X.Y> recovered/reverted`
+5. If it fails → `git stash push -m "br-fix: partial STORY-X.Y"` — NEVER
+   `git checkout .`/`git restore .`: discarding a half-implemented story
+   destroys work irreversibly, and the partial code is exactly what the next
+   retry (or the user) needs to inspect. The stash keeps the tree clean AND
+   the work recoverable (`git stash pop` to get it back).
+6. Log: `[FIX] Interrupted story <X.Y> recovered/stashed`
 
 ### Fix 3: Retry a Failed/Escalated Story
 When a story was escalated or failed:

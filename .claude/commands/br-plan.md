@@ -90,6 +90,24 @@ When writing user stories:
 - **P2**: Features that delight but aren't essential
 - Sort stories by dependency order within each priority
 
+**P0 discipline:** P0 is the set without which you would NOT ship — if more
+than ~40% of stories are P0, you are not prioritizing, you are labeling.
+Re-challenge each P0: "would we really hold the release for this?" Demote until
+the answer is yes for every remaining one.
+
+## Quality Rules for the PRD Content
+
+- **Traceability**: every user story must trace to a problem or persona in the
+  business brief. A story that traces to nothing is invented scope — cut it or
+  flag it to the user.
+- **KPIs must be measurable as written**: "page loads in <2s on 3G" is a KPI;
+  "fast and responsive" is not. Same for NFRs — give numbers or drop the claim.
+- **Acceptance criteria must be checkable by a program or a test** — prefer
+  Given/When/Then. "Works correctly" is not a criterion.
+- **Assumptions carried from discovery**: if the brief tagged something
+  [ASSUMPTION] and the PRD depends on it, restate it in section 9 (Risks) —
+  don't silently launder an assumption into a requirement.
+
 ## Sprint Estimation
 
 At the bottom of the PRD, add a rough sprint estimate:

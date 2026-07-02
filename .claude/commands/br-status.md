@@ -26,7 +26,7 @@ If the file doesn't exist, say: "No BMAD-Ralph project initialized. Run `/br-ini
 ║  [x] DISCOVER  — Business & technical analysis            ║
 ║  [x] PLAN      — Product requirements (PRD)              ║
 ║  [ ] ARCHITECT — System architecture          <── CURRENT ║
-║  [ ] SPRINT    — Story breakdown                          ║
+║  [ ] SPRINT_PREP — Story breakdown                        ║
 ║  [ ] EXECUTE   — Ralph autonomous build                   ║
 ║  [ ] REVIEW    — Quality gate                             ║
 ║                                                           ║

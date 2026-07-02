@@ -96,7 +96,7 @@ Cross-reference:
 ║     → Ralph was interrupted during STORY-1.4              ║
 ║     → Files changed: src/routes/notes.ts, src/app.ts      ║
 ║     → Fix: run /br-build story STORY-1.4          ║
-║              or git checkout . to revert                   ║
+║              or /br-fix (stashes the partial work)  ║
 ║                                                           ║
 ║  2. [WARNING] state.json says 5 stories done,             ║
 ║     but git log shows only 4 commits                      ║

@@ -94,14 +94,40 @@ If yes, add refactoring items as "Warning" level issues in the synthesis.
 
 ## Step 4: Synthesize Review
 
-After all agents complete, read all 4 review documents and create:
+### Scoring Rubric — the score is COMPUTED, not felt
+
+You are reviewing your own team's output; the pull toward "B, PASS" is real.
+The score is therefore derived mechanically from the evidence:
+
+| Score | Criteria (ALL must hold) |
+|-------|--------------------------|
+| A | Build+types+lint+tests all pass, every acceptance criterion of every story verified met, zero critical issues, ≤2 warnings |
+| B | Build+types+lint+tests all pass, all acceptance criteria met, zero critical issues, warnings exist |
+| C | Build+tests pass, but some acceptance criteria unverifiable or minor gaps; zero critical issues |
+| D | Any verification step fails, OR any acceptance criterion clearly not met, OR ≥1 critical issue |
+| F | Build/test suite broken, or a security-critical issue found |
+
+**Issue severity is defined, not vibes:**
+- **Critical** = wrong behavior a user would hit, a security hole, data loss, or a broken build — something that must not ship
+- **Warning** = works but degrades quality (duplication, missing edge-case handling, pattern inconsistency)
+- **Suggestion** = improvement with no current negative impact
+
+**Every issue must carry evidence: `file:line` + one sentence of what happens.**
+An issue without a location and a failure mode gets dropped, not reported.
+
+**Anti-rubber-stamp check:** if the four review agents collectively found zero
+critical issues and fewer than 3 warnings, do not conclude "clean sprint" —
+explicitly list what was checked and verify the two riskiest stories yourself
+(read the diff, run their verification) before accepting that result.
+
+After all agents complete, read all 4 review documents, apply the rubric, and create:
 
 `.bmad-ralph/logs/review-sprint-<N>.md`:
 
 ```markdown
 # Sprint <N> Review Report
 
-## Overall Score: <A|B|C|D|F>
+## Overall Score: <A|B|C|D|F> — <one line citing which rubric row and why>
 
 ## Verification Results
 - Build: PASS/FAIL
@@ -110,11 +136,15 @@ After all agents complete, read all 4 review documents and create:
 - Tests: PASS/FAIL (<X>/<Y> passing)
 - Coverage: <X>%
 
+## Acceptance Criteria Coverage
+- Stories fully verified: <X>/<Y>
+- Criteria unverifiable (and why): <list or "none">
+
 ## Critical Issues (must fix before next sprint)
-<issues that block progress>
+<file:line — what happens — which story>
 
 ## Warnings (should fix)
-<issues that degrade quality but don't block>
+<file:line — what happens>
 
 ## Suggestions (nice to have)
 <improvements for later>

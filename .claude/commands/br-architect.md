@@ -27,6 +27,30 @@ Read:
 
 3. **Check what already exists before designing.** Read the codebase thoroughly. If a pattern, component, or utility already exists that serves the purpose, REUSE it — do not design a replacement. Verify the dependency manifest (`package.json`, `cargo.toml`, etc.) to know what libraries are actually available.
 
+4. **Right-size the architecture to the PRD — no résumé-driven design.** Every structural choice (microservices, queues, caching layers, event sourcing, a second datastore) must be justified by a written requirement — an NFR, a scale number, a user story — not by "best practice". If the PRD describes a CRUD app for 50 users, the correct architecture is a boring monolith. Start from the simplest architecture that satisfies the requirements; justify every addition on top of it.
+
+5. **In an existing project, the existing stack wins by default.** Replacing a framework, ORM, or build tool requires a justification tied to a requirement the current stack cannot meet — "newer" or "more popular" doesn't count.
+
+## Tech Stack Decisions Must Be Argued, Not Assumed
+
+For each layer where a real choice exists (framework, DB, auth, hosting), do NOT
+just fill in a name. Compare the 2-3 serious candidates against the criteria
+that actually matter for THIS project (the PRD's NFRs, the discovery's technical
+findings, team/deployment constraints), then decide:
+
+```markdown
+### Decision: <layer>
+- Candidates: <A> vs <B> (vs <C>)
+- Criteria that matter here: <e.g. hosting cost, realtime needs, ecosystem, familiarity>
+- Chosen: <X> — <argument tied to a requirement>
+- Rejected: <Y> — <concrete reason, not vibes>
+- Revisit if: <condition under which to reconsider>
+```
+
+Keep each decision to ~5 lines — the point is to force an argument, not to write
+a thesis. If there is genuinely no choice (existing project, user-imposed stack),
+write one line: "imposed by <constraint>".
+
 ## Generate Architecture Document
 
 Write `.bmad-ralph/docs/architecture.md`:
@@ -43,6 +67,10 @@ Write `.bmad-ralph/docs/architecture.md`:
 | Auth | | |
 | Hosting | | |
 | CI/CD | | |
+
+### 1.1 Decision Records
+<one "Decision:" block per contested layer — see "Tech Stack Decisions Must Be
+Argued" above. The table is the summary; this is the evidence.>
 
 ## 2. Directory Structure
 ```
@@ -94,6 +122,14 @@ For each component:
 - Global error handler pattern
 - User-facing error messages
 
+## 7b. Configuration & Environment
+- EVERY env var the app needs: name, purpose, example value, where it's read
+- `.env.example` content (Ralph will create this file in Sprint 1)
+- Which values are secrets and how they're provided (never committed)
+- Config validation at startup — fail fast with a clear message if missing
+<This section prevents the classic escalation: a story failing 3 times because
+JWT_SECRET or DATABASE_URL was never specified anywhere.>
+
 ## 8. Testing Strategy
 - Unit test patterns (example)
 - Integration test patterns (example)
@@ -129,8 +165,23 @@ After writing the architecture, validate it by checking:
 - [ ] The dependency graph has no circular dependencies
 - [ ] The testing strategy covers all critical paths
 - [ ] Auth is specified for every protected resource
+- [ ] Every env var / secret any component reads is declared in section 7b
 - [ ] Every library referenced actually exists in the dependency manifest (or is listed as "to install")
 - [ ] Existing codebase patterns are reused — not replaced without justification
+
+## Adversarial Self-Review (before declaring done)
+
+You just designed this — you are the worst-placed person to judge it. Switch
+roles: you are now a skeptical senior engineer reviewing a colleague's design.
+Answer these in writing (2-3 lines each) at the end of the document:
+
+1. **What is the most likely reason this architecture fails during autonomous
+   implementation?** (the thing Ralph will trip on)
+2. **What did I add that the PRD never asked for?** Remove it or justify it.
+3. **Which decision am I least confident about?** Flag it for the user instead
+   of hiding it.
+4. **If I had to cut the design by 30%, what would go first?** If cutting it
+   changes nothing, why is it in the design?
 
 ## After Completion
 

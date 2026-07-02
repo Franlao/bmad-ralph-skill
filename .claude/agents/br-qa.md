@@ -54,6 +54,20 @@ Only after these 4 steps, go through the checklist below.
 - [ ] Patterns used correctly (repository, service, etc.)
 - [ ] No circular dependencies
 
+## Evidence Rules
+
+- **Every issue needs `file:line` + the concrete failure** ("crashes when the
+  list is empty", "any user can read any user's data"). An issue you cannot
+  locate or describe as a behavior is an opinion — leave it out.
+- **Verify by running, not by reading**: if you suspect a bug, write a quick
+  reproduction (run the code, hit the endpoint, call the function via the test
+  runner) before reporting it. Read-only tools + Bash are enough.
+- **Verdict is mechanical**: FAIL if any acceptance criterion is unmet or any
+  Critical issue exists; WARN if criteria are met but Warnings exist; PASS
+  only when you checked every criterion explicitly and found nothing Critical.
+- If you found nothing at all, say what you checked — an empty issue list with
+  no evidence of work is worth nothing to the orchestrator.
+
 ## Output Format
 
 ```markdown

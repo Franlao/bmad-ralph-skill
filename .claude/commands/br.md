@@ -71,10 +71,10 @@ Then list completed deliverables with checkmarks and pending ones with empty box
 
 1. **Never skip phases** unless the user explicitly asks with "skip"
 2. **Always show the user what the next step is** after completing a phase
-3. **If Ralph execution fails 3 times on the same story**, escalate back to ARCHITECT phase for that component
-4. **Track token cost estimates** in state.json for budget awareness
-5. **Auto-save state** after every phase transition
-6. **Update `last_updated_at`** in state.json after every state change
+3. **When a story trips the circuit breaker**, `/br-build` writes an escalation file and moves on — do NOT change phase mid-sprint. The escalations are handled at the quality gate: `/br-review` decides whether they need an architecture amendment (→ ARCHITECT), rewritten stories (→ SPRINT_PREP), or fix stories (stay in EXECUTE).
+4. **Auto-save state** after every phase transition
+5. **Update `last_updated_at`** in state.json after every state change
+6. For cost/iteration analytics, point the user to `/br-metrics` — it derives everything from the sprint logs and state counters
 
 ## Living Plan Management
 

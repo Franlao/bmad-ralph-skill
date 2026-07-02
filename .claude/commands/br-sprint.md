@@ -52,6 +52,15 @@ Step-by-step, explicit instructions:
 ```bash
 <the exact command(s) Ralph should run to verify this story is complete>
 ```
+The command must be RUNNABLE AS WRITTEN — no placeholders, no "adapt as
+needed". It must be able to FAIL: `echo done` or a command that passes on an
+empty repo verifies nothing. Prefer the project's real test/build commands
+scoped to the story's files.
+
+### Interface Contract (if other stories depend on this one)
+<the EXACT exported names/signatures/types this story provides — dependent
+stories will import these; if they're not written down, parallel stories
+will each invent their own and the merge will break>
 
 ### Rollback
 If this story fails after 3 attempts:
@@ -65,6 +74,11 @@ If this story fails after 3 attempts:
 - **Max 8 stories per sprint** (Ralph works better with focused sprints)
 - **Stories within a sprint are ordered by dependency** (independent ones first)
 - **Each sprint should produce a testable increment**
+- **Sprint 1 is a walking skeleton**: the thinnest end-to-end slice that runs —
+  project boots, config loads (`.env.example` from architecture section 7b),
+  one trivial route/page/command works, tests and lint run in CI-fashion.
+  Every later sprint then builds on something that demonstrably runs, and
+  environment problems surface in Sprint 1 instead of poisoning Sprint 3.
 
 ### Sprint Structure
 Write each sprint to `.bmad-ralph/sprints/sprint-<N>.md`:

@@ -73,7 +73,10 @@ Decide where the new stories go:
 1. Append feature to PRD (`prd.md`) in the appropriate priority section
 2. If architecture changes needed → write to `.bmad-ralph/docs/architecture-amendments.md`
 3. Update state.json:
-   - Increment `total_sprints` if new sprint created
+   - Increment `total_sprints` if a new sprint was created, and add its entry to
+     the `sprints` array (`{id, theme, stories_total, stories_completed: 0, status: "PENDING", quality_gate: null}`)
+   - If stories were appended to an existing pending sprint → update that
+     sprint entry's `stories_total`
    - Update `metrics.stories_total`
 
 ### Step 5: Display Summary

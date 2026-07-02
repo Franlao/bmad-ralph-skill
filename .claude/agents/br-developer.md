@@ -39,10 +39,20 @@ Before doing anything else, use the TodoWrite tool to break the story into discr
    - Are all libraries I plan to use actually in the dependency manifest?
    If any answer is NO — keep reading code until you have full clarity.
 
+### Phase 1b — Library & API Currency (before writing code that touches ANY library)
+
+Your memory of library APIs is stale by definition — training data ages, libraries don't.
+
+1. **Read the exact installed version** from the lockfile (`package-lock.json`, `poetry.lock`, `Cargo.lock`, ...) — not just the manifest range
+2. **Look up the docs FOR THAT VERSION** before using any API you are not 100% certain of: context7 MCP if available, else WebFetch on the official docs, else the library's own `.d.ts`/source in `node_modules` (which is ground truth and always available)
+3. Version-sensitive hotspots where memory fails silently: router/framework APIs between majors (Next.js, React Router...), ORM query syntax (Prisma, Drizzle, SQLAlchemy 1→2), config file formats, default behaviors that flipped between versions
+4. If the docs show your intended API no longer exists → use the current API; do NOT pin to an older version to match your memory (that's adding a dependency decision the architecture never made — escalate if truly blocked)
+
 ### Phase 2 — Implement
 
 6. **Implement** exactly as the story instructions specify
 7. Follow existing code patterns (imports, naming, error handling) — do not invent new ones
+8. **Before writing any helper/utility: search the codebase for an existing one** (Grep by concept, not just name). Duplicating an existing helper is a bug, not a style issue — the two copies will diverge
 
 ### Phase 3 — Verify & Self-Critique
 
@@ -50,12 +60,34 @@ Before doing anything else, use the TodoWrite tool to break the story into discr
 9. **Run lint and typecheck** — always, even if the verification passed:
    - Detect the commands from `package.json` scripts (e.g. `npm run lint`, `npm run typecheck`) or project config (`ruff`, `cargo clippy`, `mypy`, etc.)
    - Fix any errors before proceeding — do not skip this step
-10. **Before reporting PASS**, critically examine your work:
+10. **Read your own diff** (`git diff`) as if reviewing a stranger's PR, and check the Quality Bar below — you catch different bugs reading than writing
+11. **Before reporting PASS**, critically examine your work:
     - Did I implement ALL acceptance criteria, not just some?
     - Did I touch any file outside the story's list without good reason?
     - Does my code actually follow the architecture doc patterns?
     - Would this pass a strict code review?
-11. **Report result** — PASS with commit info, or FAIL with exact error
+12. **Report result** — PASS with commit info, or FAIL with exact error
+
+## Quality Bar (checked on your own diff before every commit)
+
+**Correctness at the boundaries**
+- Input validation where user/external data enters; explicit behavior for null/empty/error cases — not just the happy path
+- Errors handled per the architecture's error strategy; never swallowed silently
+
+**Performance — verifiable rules, not vibes**
+- No N+1: anything fetching in a loop gets batched/joined/preloaded
+- No O(n²) (or worse) on data that grows with usage — fine on small fixed sets, a time bomb on user data
+- Queries on filtered/sorted fields use the indexes the architecture defined; SELECT only needed fields for large tables
+- Lists that can grow are paginated/limited — never "fetch all" on user data
+- No blocking I/O in hot paths (request handlers, render loops); no `await` in a loop when calls are independent (batch with `Promise.all`/equivalent)
+- Resources closed/disposed (connections, file handles, subscriptions, listeners)
+- **But no premature optimization**: no caching, memoization, or clever data structures without a requirement or a measurement — an unjustified cache is a bug factory (invalidation), not a speedup
+
+**Simplicity**
+- The straightforward implementation first; abstractions only when the story or architecture calls for them
+- No dead code, no unused imports/exports, no "just in case" parameters
+
+**If the story has a performance acceptance criterion** (e.g. "responds < 200ms"): measure it (`time`, test-runner timings, a quick script) and report the number — a perf criterion without a measurement is not verified.
 
 ## Code Quality Rules
 

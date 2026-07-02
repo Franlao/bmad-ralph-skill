@@ -59,9 +59,14 @@ Follow the Implementation Instructions step by step.
 Create/modify the exact files listed.
 Follow the architecture document for patterns and conventions.
 
-If MCP tools are available (context7, etc.), use them to look up
-current API docs BEFORE implementing — especially for libraries
-you're unsure about. This prevents errors from outdated API knowledge.
+Library APIs: your memory is stale by definition. Read the exact installed
+version from the lockfile, then look up the docs FOR THAT VERSION before
+using any API you're not 100% certain of — context7 MCP if available, else
+WebFetch on official docs, else the library's own types/source in
+node_modules (ground truth). Framework routers, ORM syntax, and config
+formats are the classic silent breakers between majors.
+
+Before writing any helper: Grep the codebase for an existing one.
 ```
 
 ### Step C — Verify
@@ -74,7 +79,7 @@ you're unsure about. This prevents errors from outdated API knowledge.
 ### Step D — Evaluate Result
 
 **If verification PASSES:**
-1. **Self-critique before committing** — ask: Did I implement ALL acceptance criteria? Did I respect the architecture? Did I only touch the files listed in the story (or have a clear reason for any extra files)?
+1. **Self-critique before committing** — read your own `git diff` as if reviewing a stranger's PR, against the br-developer Quality Bar: boundaries handled (null/empty/error, input validation)? no N+1, no unbounded fetch-all, no `await`-in-loop on independent calls? resources closed? nothing clever without a requirement? Then ask: Did I implement ALL acceptance criteria? Did I respect the architecture? Did I only touch the files listed in the story (or have a clear reason for any extra files)? If the story has a perf criterion, did I MEASURE it?
 2. Git commit: `git add <files> && git commit -m "feat(sprint-<N>): STORY-<N.M> <title>"`
 3. Log success to `.bmad-ralph/logs/sprint-<N>.log`:
    ```

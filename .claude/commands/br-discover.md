@@ -14,30 +14,57 @@ Launch **4 parallel research subagents** to analyze the project from every angle
 ## Critical Rule
 **NEVER guess or assume — every finding must be rooted in actual research.** If you cannot find information through codebase exploration or web search, state what is unknown rather than inventing an answer. Wrong assumptions in discovery propagate into wrong architecture, wrong stories, and failed sprints.
 
-## Execute 4 Parallel Research Streams
+**Every claim in a discovery doc must be tagged:**
+- `[FACT — source]` — verified via web search, docs, or the codebase (link/file the source)
+- `[ASSUMPTION]` — plausible but unverified; the plan must not silently depend on these
+- `[UNKNOWN]` — could not be determined; note what would resolve it
 
-**MAXIMIZE EFFICIENCY**: Launch all 4 agents **simultaneously** in a single message with 4 tool calls. Never make sequential agent calls when they can be batched.
+Numbers are the biggest fabrication risk: market sizes, user counts, adoption
+stats. Never produce a number without a source. "No reliable figure found" is a
+valid — and better — answer than an invented one.
 
-**IMPORTANT**: Set `mode: "bypassPermissions"` on ALL Agent calls so they run fully autonomously without prompting the user.
+## Scale Discovery to the Project Type
+
+Not every project needs market research. Before launching agents, classify the
+project from state.json and the brief:
+
+- **Commercial / user-facing product** → all 4 agents
+- **Internal tool, personal project, or technical utility** → skip Agent 1
+  (market) and Agent 2 (competitive); replace them with a single "Prior Art"
+  agent (does an existing library/tool already solve this? build vs. reuse),
+  then run Agents 3 and 4
+- **Feature added to an existing product** → skip Agent 1; run 2, 3, 4 with the
+  feature (not the whole product) as the subject
+
+State which mode you chose and why, in one line. Running a market analysis on
+someone's internal CLI wastes tokens and produces fiction.
+
+## Execute the Research Streams in Parallel
+
+**MAXIMIZE EFFICIENCY**: Launch the selected agents **simultaneously** in a single message. Never make sequential agent calls when they can be batched.
+
+**IMPORTANT**: Research subagents only need read-only tools (Read, Glob, Grep, WebSearch, WebFetch), so they run without permission prompts — the Agent tool has no per-call permission parameter anyway.
 
 ### Agent 1: Market & Problem Analysis
 ```
 Analyze the project described in .bmad-ralph/state.json and .bmad-ralph/docs/brief-template.md.
-Research:
+Research (use WebSearch — do not answer from memory):
 - What problem does this solve?
-- Who are the target users? Create 2-3 user personas.
-- What is the market size/opportunity?
-- What are the key user pain points?
+- Who are the target users? Create 2-3 user personas grounded in what you found.
+- Market opportunity: cite sources, or write "no reliable figure found" — NEVER invent numbers.
+- What are the key user pain points? (forums, reviews, comparable-product complaints)
+Tag every claim [FACT — source] / [ASSUMPTION] / [UNKNOWN].
 Write your findings to .bmad-ralph/docs/discovery-market.md
 ```
 
 ### Agent 2: Competitive Analysis
 ```
 Based on the project in .bmad-ralph/state.json:
-- Identify 3-5 competing products or solutions
-- List their strengths and weaknesses
+- Identify 3-5 competing products or solutions (verify they exist via WebSearch — no invented competitors)
+- List their strengths and weaknesses, with sources (their sites, docs, reviews)
 - Identify gaps and opportunities for differentiation
-- Note pricing models and monetization strategies
+- Note pricing models and monetization strategies (from their actual pricing pages)
+Tag every claim [FACT — source] / [ASSUMPTION] / [UNKNOWN].
 Write your findings to .bmad-ralph/docs/discovery-competitive.md
 ```
 
@@ -55,7 +82,7 @@ Analyze the project in .bmad-ralph/state.json and the existing codebase:
 Write your findings to .bmad-ralph/docs/discovery-technical.md
 ```
 
-### Agent 4: Existing Codebase Analysis (if applicable)
+### Agent 4: Existing Codebase Analysis (skip entirely on a greenfield project — an empty repo needs no codebase agent)
 ```
 Explore the existing codebase thoroughly:
 - Map the directory structure and architecture patterns
@@ -69,7 +96,7 @@ Write your findings to .bmad-ralph/docs/discovery-codebase.md
 
 ## After All Agents Complete
 
-1. Read all 4 discovery documents
+1. Read all discovery documents produced
 2. Write a consolidated `.bmad-ralph/docs/business-brief.md` that synthesizes all findings into:
    - **Executive Summary** (3-5 sentences)
    - **Problem Statement**
@@ -86,4 +113,4 @@ Write your findings to .bmad-ralph/docs/discovery-codebase.md
    - Set `deliverables.business_brief` to `.bmad-ralph/docs/business-brief.md`
 
 4. Present the business brief summary to the user and say:
-   "Discovery complete. Review the brief above. When ready, run `/project:br-plan` to generate the PRD."
+   "Discovery complete. Review the brief above. When ready, run `/br-plan` to generate the PRD."

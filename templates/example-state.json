@@ -34,7 +34,6 @@
     "max_iterations_per_story": 5,
     "max_iterations_per_sprint": 40,
     "circuit_breaker_threshold": 3,
-    "completion_promise": "STORY_COMPLETE",
     "current_story": "STORY-2.6",
     "current_attempt": 1
   },

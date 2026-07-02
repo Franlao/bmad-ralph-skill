@@ -21,6 +21,20 @@ echo -e "${CYAN}║   Structured Planning + Autonomous Execution   ║${NC}"
 echo -e "${CYAN}╚═══════════════════════════════════════════════╝${NC}"
 echo ""
 
+BR_HOOK_SCRIPTS="br-guard.sh br-monitor.sh br-post-edit.sh br-lib.sh"
+
+# Remove BMAD-Ralph hook entries from a settings.json (requires jq)
+strip_br_hooks() {
+    local settings="$1"
+    jq '(.hooks // {}) |= map_values(
+            map(select(
+                ([.hooks[]?.command // ""] | any(test("br-(guard|monitor|post-edit)\\.sh"))) | not
+            ))
+        )
+        | .hooks |= with_entries(select(.value | length > 0))
+        | if .hooks == {} then del(.hooks) else . end' "$settings"
+}
+
 # Determine install scope
 INSTALL_DIR=""
 SCOPE=""
@@ -41,18 +55,37 @@ if [ "$1" == "--uninstall" ]; then
     for hook in "${INSTALL_DIR}/hooks"/br-*.sh; do
         [ -f "$hook" ] && rm "$hook" && echo -e "  ${RED}-${NC} $(basename "$hook")"
     done
-    [ -d "${INSTALL_DIR}/templates" ] && rm -rf "${INSTALL_DIR}/templates" && echo -e "  ${RED}-${NC} templates/"
-    echo ""
-    echo -e "${YELLOW}Note: settings.json was NOT removed. Remove br-* hook entries manually if needed.${NC}"
+    # Only remove files WE installed — never the whole templates dir,
+    # it may contain the user's own templates.
+    for tmpl in CLAUDE.md hooks-config.json hooks-config.resolved.json; do
+        if [ -f "${INSTALL_DIR}/templates/${tmpl}" ]; then
+            rm "${INSTALL_DIR}/templates/${tmpl}" && echo -e "  ${RED}-${NC} templates/${tmpl}"
+        fi
+    done
+    rmdir "${INSTALL_DIR}/templates" 2>/dev/null || true
+    # Clean br-* hook entries out of settings.json when jq is available
+    if [ -f "${INSTALL_DIR}/settings.json" ]; then
+        if command -v jq >/dev/null 2>&1 && grep -q 'br-guard.sh' "${INSTALL_DIR}/settings.json"; then
+            strip_br_hooks "${INSTALL_DIR}/settings.json" > "${INSTALL_DIR}/settings.json.tmp" \
+                && mv "${INSTALL_DIR}/settings.json.tmp" "${INSTALL_DIR}/settings.json"
+            echo -e "  ${RED}-${NC} br-* hook entries removed from settings.json"
+        else
+            echo -e "${YELLOW}Note: remove br-* hook entries from settings.json manually (jq not found).${NC}"
+        fi
+    fi
     echo -e "${YELLOW}Note: .bmad-ralph/ project data was NOT removed. Delete it manually if needed.${NC}"
     echo -e "${GREEN}BMAD-Ralph uninstalled.${NC}"
     exit 0
 elif [ "$1" == "--global" ]; then
     INSTALL_DIR="$HOME/.claude"
     SCOPE="global (all projects)"
+    # User-level hooks live at a fixed absolute path
+    HOOKS_DIR_REF="$HOME/.claude/hooks"
 elif [ "$1" == "--project" ] || [ -z "$1" ]; then
     INSTALL_DIR=".claude"
     SCOPE="project (current directory)"
+    # Resolved by Claude Code at hook runtime, regardless of cwd
+    HOOKS_DIR_REF='$CLAUDE_PROJECT_DIR/.claude/hooks'
 else
     echo -e "${RED}Usage: ./install.sh [--global|--project|--uninstall]${NC}"
     echo "  --project    Install for current project only (default)"
@@ -64,6 +97,11 @@ fi
 echo -e "${BLUE}Install scope: ${SCOPE}${NC}"
 echo -e "${BLUE}Install path:  ${INSTALL_DIR}${NC}"
 echo ""
+
+if ! command -v jq >/dev/null 2>&1; then
+    echo -e "${YELLOW}Warning: jq not found. Hooks fall back to python3/sed parsing — install jq for the most robust guard.${NC}"
+    echo ""
+fi
 
 # Get the script's directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -110,13 +148,29 @@ if [ -f "${SCRIPT_DIR}/templates/CLAUDE.md" ]; then
     echo -e "  ${GREEN}+${NC} templates/CLAUDE.md"
 fi
 
+# Resolve hook paths for this scope (template uses the __BR_HOOKS_DIR__ placeholder)
+RESOLVED_HOOKS_CONFIG="${INSTALL_DIR}/templates/hooks-config.resolved.json"
+sed "s|__BR_HOOKS_DIR__|${HOOKS_DIR_REF}|g" "${SCRIPT_DIR}/templates/hooks-config.json" > "$RESOLVED_HOOKS_CONFIG"
+
 # Install hooks config
 echo -e "${YELLOW}Configuring hooks...${NC}"
-if [ -f "${INSTALL_DIR}/settings.json" ]; then
-    echo -e "  ${BLUE}i${NC} settings.json exists — merge hooks manually from templates/hooks-config.json"
+if [ ! -f "${INSTALL_DIR}/settings.json" ]; then
+    cp "$RESOLVED_HOOKS_CONFIG" "${INSTALL_DIR}/settings.json"
+    echo -e "  ${GREEN}+${NC} settings.json (guard + auto-format + monitor hooks)"
+elif grep -q 'br-guard.sh' "${INSTALL_DIR}/settings.json"; then
+    echo -e "  ${BLUE}i${NC} settings.json already contains BMAD-Ralph hooks — skipped"
+elif command -v jq >/dev/null 2>&1; then
+    # Append our hook groups to the existing arrays without touching anything else
+    jq -s '
+        .[0] as $cur | .[1] as $new
+        | $cur
+        | .hooks.PreToolUse  = (($cur.hooks.PreToolUse  // []) + $new.hooks.PreToolUse)
+        | .hooks.PostToolUse = (($cur.hooks.PostToolUse // []) + $new.hooks.PostToolUse)
+    ' "${INSTALL_DIR}/settings.json" "$RESOLVED_HOOKS_CONFIG" > "${INSTALL_DIR}/settings.json.tmp" \
+        && mv "${INSTALL_DIR}/settings.json.tmp" "${INSTALL_DIR}/settings.json"
+    echo -e "  ${GREEN}+${NC} BMAD-Ralph hooks merged into existing settings.json"
 else
-    cp "${SCRIPT_DIR}/templates/hooks-config.json" "${INSTALL_DIR}/settings.json"
-    echo -e "  ${GREEN}+${NC} settings.json (guard + auto-format hooks)"
+    echo -e "  ${BLUE}i${NC} settings.json exists and jq is unavailable — merge hooks manually from templates/hooks-config.resolved.json"
 fi
 
 # Count installed files
@@ -134,43 +188,44 @@ echo ""
 echo -e "${CYAN}Available commands:${NC}"
 echo ""
 echo -e "  ${YELLOW}Workflow:${NC}"
-echo "  /project:br-init <description>  — Initialize a new project"
-echo "  /project:br-auto                — Run all planning phases automatically"
-echo "  /project:br-build               — Launch Ralph autonomous execution"
-echo "  /project:br-build auto          — Run all sprints sequentially"
-echo "  /project:br-review              — Quality gate review"
+echo "  /br-init <description>  — Initialize a new project"
+echo "  /br-auto                — Run all planning phases automatically"
+echo "  /br-build               — Launch Ralph autonomous execution"
+echo "  /br-build auto          — Run all sprints sequentially"
+echo "  /br-review              — Quality gate review"
 echo ""
 echo -e "  ${YELLOW}Planning phases:${NC}"
-echo "  /project:br-discover            — Discovery (4 parallel agents)"
-echo "  /project:br-plan                — Generate PRD"
-echo "  /project:br-architect           — Design architecture"
-echo "  /project:br-sprint              — Break into stories"
+echo "  /br-discover            — Discovery (4 parallel agents)"
+echo "  /br-plan                — Generate PRD"
+echo "  /br-architect           — Design architecture"
+echo "  /br-sprint              — Break into stories"
 echo ""
 echo -e "  ${YELLOW}Monitoring:${NC}"
-echo "  /project:br-status              — Dashboard"
-echo "  /project:br-logs                — View logs"
-echo "  /project:br-debug               — Diagnose issues"
-echo "  /project:br-metrics             — Performance analytics"
-echo "  /project:br-test                — Run tests"
+echo "  /br-status              — Dashboard"
+echo "  /br-logs                — View logs"
+echo "  /br-debug               — Diagnose issues"
+echo "  /br-metrics             — Performance analytics"
+echo "  /br-test                — Run tests"
 echo ""
 echo -e "  ${YELLOW}Management:${NC}"
-echo "  /project:br-scope               — Add/remove features"
-echo "  /project:br-rollback            — Revert stories/sprints"
-echo "  /project:br-config              — Change settings"
-echo "  /project:br-deploy              — Generate deployment artifacts"
-echo "  /project:br-fix                 — Auto-repair issues"
-echo "  /project:br-resume              — Resume after interruption"
-echo "  /project:br-update              — Update skill from GitHub"
-echo "  /project:br                     — Smart orchestrator"
+echo "  /br-scope               — Add/remove features"
+echo "  /br-rollback            — Revert stories/sprints"
+echo "  /br-config              — Change settings"
+echo "  /br-deploy              — Generate deployment artifacts"
+echo "  /br-fix                 — Auto-repair issues"
+echo "  /br-resume              — Resume after interruption"
+echo "  /br-update              — Update skill from GitHub"
+echo "  /br                     — Smart orchestrator"
 echo ""
 echo -e "${YELLOW}Autonomous mode:${NC}"
-echo "  All agents run with bypassPermissions — zero user prompts needed."
-echo "  Guard hook (br-guard.sh) blocks dangerous operations automatically."
+echo "  Execution agents run with bypassPermissions (set in their frontmatter)."
+echo "  The guard hook (br-guard.sh) blocks common destructive operations —"
+echo "  it is a best-effort safety net, not a sandbox."
 echo ""
 echo -e "${YELLOW}Quick start:${NC}"
 echo "  1. cd your-project/"
 echo "  2. claude"
-echo '  3. /project:br-init "Build a task management SaaS with team collaboration"'
-echo "  4. /project:br-auto   (runs all BMAD phases automatically)"
-echo "  5. /project:br-build  (launches Ralph for autonomous execution)"
+echo '  3. /br-init "Build a task management SaaS with team collaboration"'
+echo "  4. /br-auto   (runs all BMAD phases automatically)"
+echo "  5. /br-build  (launches Ralph for autonomous execution)"
 echo ""

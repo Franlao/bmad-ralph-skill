@@ -20,19 +20,19 @@ INIT → DISCOVER → PLAN → ARCHITECT → SPRINT_PREP → EXECUTE → REVIEW 
 
 ## Your First Action
 
-Read `.bmad-ralph/state.json` to understand the current state. If it doesn't exist, tell the user to run `/project:br-init` first.
+Read `.bmad-ralph/state.json` to understand the current state. If it doesn't exist, tell the user to run `/br-init` first.
 
 Based on the current phase, guide the user:
 
 | Phase | What to do | Command |
 |-------|-----------|---------|
-| `INIT` | Project not initialized | `/project:br-init <description>` |
-| `DISCOVER` | Run business/technical discovery | `/project:br-discover` |
-| `PLAN` | Generate PRD from discovery | `/project:br-plan` |
-| `ARCHITECT` | Design system architecture | `/project:br-architect` |
-| `SPRINT_PREP` | Break into sprint stories | `/project:br-sprint` |
-| `EXECUTE` | Launch Ralph autonomous loop | `/project:br-build` |
-| `REVIEW` | Quality gate review | `/project:br-review` |
+| `INIT` | Project not initialized | `/br-init <description>` |
+| `DISCOVER` | Run business/technical discovery | `/br-discover` |
+| `PLAN` | Generate PRD from discovery | `/br-plan` |
+| `ARCHITECT` | Design system architecture | `/br-architect` |
+| `SPRINT_PREP` | Break into sprint stories | `/br-sprint` |
+| `EXECUTE` | Launch Ralph autonomous loop | `/br-build` |
+| `REVIEW` | Quality gate review | `/br-review` |
 | `DONE` | Project complete | Celebrate! |
 
 ## Arguments Handling
@@ -65,16 +65,16 @@ Then list completed deliverables with checkmarks and pending ones with empty box
 
 ## Permissions & Autonomy
 
-**ALL Agent tool calls MUST use `mode: "bypassPermissions"`** so the entire pipeline runs without user prompts. The guard hook (`br-guard.sh`) provides safety against dangerous operations.
+**Autonomy comes from the agent definitions, not per-call parameters** (the Agent tool has no `mode` argument): delegate implementation to `br-developer` and reviews to `br-qa`, whose frontmatter declares `permissionMode: bypassPermissions`. The guard hook (`br-guard.sh`) adds a best-effort safety net against destructive operations.
 
 ## Intelligence Rules
 
 1. **Never skip phases** unless the user explicitly asks with "skip"
 2. **Always show the user what the next step is** after completing a phase
-3. **If Ralph execution fails 3 times on the same story**, escalate back to ARCHITECT phase for that component
-4. **Track token cost estimates** in state.json for budget awareness
-5. **Auto-save state** after every phase transition
-6. **Update `last_updated_at`** in state.json after every state change
+3. **When a story trips the circuit breaker**, `/br-build` writes an escalation file and moves on — do NOT change phase mid-sprint. The escalations are handled at the quality gate: `/br-review` decides whether they need an architecture amendment (→ ARCHITECT), rewritten stories (→ SPRINT_PREP), or fix stories (stay in EXECUTE).
+4. **Auto-save state** after every phase transition
+5. **Update `last_updated_at`** in state.json after every state change
+6. For cost/iteration analytics, point the user to `/br-metrics` — it derives everything from the sprint logs and state counters
 
 ## Living Plan Management
 

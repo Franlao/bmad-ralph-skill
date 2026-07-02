@@ -42,9 +42,9 @@ BMAD-RALPH CONFIGURATION
   Monitor hook:           enabled
 
   Change settings:
-    /project:br-config model opus
-    /project:br-config max-iterations 8
-    /project:br-config circuit-breaker 5
+    /br-config model opus
+    /br-config max-iterations 8
+    /br-config circuit-breaker 5
 ```
 
 ## Change Model

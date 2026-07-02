@@ -7,7 +7,7 @@ description: "Change project scope — add/remove features, regenerate affected 
 
 Change the project scope mid-project without breaking what's already built.
 
-**IMPORTANT**: Use `mode: "bypassPermissions"` on all Agent tool calls for autonomous execution.
+**IMPORTANT**: For autonomous execution, delegate any file-writing work to the `br-developer` agent (its frontmatter declares `permissionMode: bypassPermissions`) — the Agent tool has no per-call permission parameter.
 
 ## Arguments
 
@@ -42,9 +42,9 @@ PROJECT SCOPE
   Stories: 11 done / 28 total
 
   Change scope:
-    /project:br-scope add "Export to CSV"
-    /project:br-scope remove "Dark mode"
-    /project:br-scope remove STORY-4.3
+    /br-scope add "Export to CSV"
+    /br-scope remove "Dark mode"
+    /br-scope remove STORY-4.3
 ```
 
 ## Add Feature
@@ -73,7 +73,10 @@ Decide where the new stories go:
 1. Append feature to PRD (`prd.md`) in the appropriate priority section
 2. If architecture changes needed → write to `.bmad-ralph/docs/architecture-amendments.md`
 3. Update state.json:
-   - Increment `total_sprints` if new sprint created
+   - Increment `total_sprints` if a new sprint was created, and add its entry to
+     the `sprints` array (`{id, theme, stories_total, stories_completed: 0, status: "PENDING", quality_gate: null}`)
+   - If stories were appended to an existing pending sprint → update that
+     sprint entry's `stories_total`
    - Update `metrics.stories_total`
 
 ### Step 5: Display Summary
@@ -100,7 +103,7 @@ When `$ARGUMENTS` = `remove "<feature>"` or `remove STORY-X.Y`:
 ### Remove by Story ID
 1. Find the story in sprint files
 2. If **already completed** (has commit):
-   - Warn: "This story is already implemented. Use `/project:br-rollback story STORY-X.Y` to revert the code."
+   - Warn: "This story is already implemented. Use `/br-rollback story STORY-X.Y` to revert the code."
    - Do NOT auto-rollback — let the user decide
 3. If **pending** (not implemented):
    - Mark as `SKIPPED` in the sprint file (add `**Status: SKIPPED**` to the story)

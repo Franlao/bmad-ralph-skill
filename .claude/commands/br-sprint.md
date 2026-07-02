@@ -52,6 +52,15 @@ Step-by-step, explicit instructions:
 ```bash
 <the exact command(s) Ralph should run to verify this story is complete>
 ```
+The command must be RUNNABLE AS WRITTEN — no placeholders, no "adapt as
+needed". It must be able to FAIL: `echo done` or a command that passes on an
+empty repo verifies nothing. Prefer the project's real test/build commands
+scoped to the story's files.
+
+### Interface Contract (if other stories depend on this one)
+<the EXACT exported names/signatures/types this story provides — dependent
+stories will import these; if they're not written down, parallel stories
+will each invent their own and the merge will break>
 
 ### Rollback
 If this story fails after 3 attempts:
@@ -65,6 +74,11 @@ If this story fails after 3 attempts:
 - **Max 8 stories per sprint** (Ralph works better with focused sprints)
 - **Stories within a sprint are ordered by dependency** (independent ones first)
 - **Each sprint should produce a testable increment**
+- **Sprint 1 is a walking skeleton**: the thinnest end-to-end slice that runs —
+  project boots, config loads (`.env.example` from architecture section 7b),
+  one trivial route/page/command works, tests and lint run in CI-fashion.
+  Every later sprint then builds on something that demonstrably runs, and
+  environment problems surface in Sprint 1 instead of poisoning Sprint 3.
 
 ### Sprint Structure
 Write each sprint to `.bmad-ralph/sprints/sprint-<N>.md`:
@@ -112,7 +126,7 @@ You are implementing Sprint <N> of the <project_name> project.
 Read `.bmad-ralph/sprints/sprint-<N>.md` for the full story list.
 
 ## Permissions
-All Agent tool calls use `mode: "bypassPermissions"` — you run fully autonomously.
+You run as the `br-developer` agent, whose definition declares `permissionMode: bypassPermissions` — fully autonomous, no user prompts.
 
 ## Rules
 1. Implement stories IN ORDER (respect dependencies)
@@ -143,9 +157,17 @@ Skip stories that already have a commit message matching their ID.
    - Add `"SPRINT_PREP"` to `phases_completed`
    - Set `current_sprint` to `1`
    - Set `total_sprints` to the number of sprints created
+   - Create one entry per sprint in the `sprints` array — `/br-build`, `/br-review`,
+     and `/br-rollback` all read and update these:
+     ```json
+     { "id": <N>, "theme": "<theme>", "stories_total": <count>,
+       "stories_completed": 0, "status": "PENDING", "quality_gate": null }
+     ```
    - Update `deliverables.sprint_stories` with file paths
-   - Update `metrics.stories_total`
+   - Set `metrics.stories_total` to the total number of implementation stories
+     (this intentionally replaces the PRD user-story count — from here on,
+     "stories" means Ralph stories)
 
 2. Present: number of sprints, stories per sprint, estimated total Ralph iterations.
 
-3. Say: "Sprint stories ready. Run `/project:br-build` to launch Ralph Wiggum autonomous execution for Sprint 1. You can also run `/project:br-build auto` to run all sprints sequentially."
+3. Say: "Sprint stories ready. Run `/br-build` to launch Ralph Wiggum autonomous execution for Sprint 1. You can also run `/br-build auto` to run all sprints sequentially."

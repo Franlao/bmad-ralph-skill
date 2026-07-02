@@ -26,8 +26,8 @@
 ## Safety
 - Never modify `.env`, credential, or key files
 - The br-guard.sh hook blocks dangerous operations automatically
-- Circuit breaker: 3 failures on same story triggers escalation
-- Max 40 iterations per sprint — pause and report if reached
+- Circuit breaker: `ralph.circuit_breaker_threshold` failures on same story (default 3) triggers escalation — read the value from state.json, it's configurable
+- Max iterations per sprint: `ralph.max_iterations_per_sprint` (default 40) — pause and report if reached
 
 ## File Structure
 - `.bmad-ralph/docs/` — planning documents (brief, PRD, architecture)
@@ -36,6 +36,6 @@
 - `.bmad-ralph/logs/` — execution logs, reviews, escalations (gitignored)
 
 ## Agent Permissions
-- All agents run with `bypassPermissions` for fully autonomous execution
-- Guard hook provides safety layer — no need for manual approval
+- The `br-developer` and `br-qa` agents declare `permissionMode: bypassPermissions` in their frontmatter for autonomous execution
+- Guard hook adds a best-effort safety net (not a sandbox)
 - QA agents are read-only — they report issues but never modify code

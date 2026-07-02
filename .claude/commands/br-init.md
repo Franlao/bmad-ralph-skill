@@ -65,7 +65,8 @@ Write `.bmad-ralph/state.json` with this structure:
     "max_iterations_per_story": 5,
     "max_iterations_per_sprint": 40,
     "circuit_breaker_threshold": 3,
-    "completion_promise": "STORY_COMPLETE"
+    "current_story": null,
+    "current_attempt": 0
   },
   "deliverables": {
     "business_brief": null,
@@ -194,10 +195,10 @@ MCP Servers installed:
   [x] fetch                 — Read any web page as markdown
   [x] eslint                — JS/TS linting (detected)
 
-  Manage MCPs later: /br-mcp list
+  Manage MCPs later: /project:br-mcp list
 ```
 
-**Note**: The user can manage MCPs later with `/br-mcp list` or `/br-mcp add/remove`.
+**Note**: The user can manage MCPs later with `/project:br-mcp list` or `/project:br-mcp add/remove`.
 
 ## Step 7: Confirm Initialization
 
@@ -206,4 +207,4 @@ Display the detected project info and ask the user to:
 2. Fill in the project brief (or provide a description)
 3. Decide if this is a new project, new feature, or refactor
 
-Then tell them: "Run `/br-discover` to start the discovery phase, or `/br-auto` to run all planning phases automatically."
+Then tell them: "Run `/project:br-discover` to start the discovery phase, or `/project:br-auto` to run all planning phases automatically."

@@ -143,8 +143,16 @@ Skip stories that already have a commit message matching their ID.
    - Add `"SPRINT_PREP"` to `phases_completed`
    - Set `current_sprint` to `1`
    - Set `total_sprints` to the number of sprints created
+   - Create one entry per sprint in the `sprints` array — `/br-build`, `/br-review`,
+     and `/br-rollback` all read and update these:
+     ```json
+     { "id": <N>, "theme": "<theme>", "stories_total": <count>,
+       "stories_completed": 0, "status": "PENDING", "quality_gate": null }
+     ```
    - Update `deliverables.sprint_stories` with file paths
-   - Update `metrics.stories_total`
+   - Set `metrics.stories_total` to the total number of implementation stories
+     (this intentionally replaces the PRD user-story count — from here on,
+     "stories" means Ralph stories)
 
 2. Present: number of sprints, stories per sprint, estimated total Ralph iterations.
 

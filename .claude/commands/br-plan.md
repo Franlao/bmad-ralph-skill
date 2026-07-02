@@ -108,7 +108,8 @@ At the bottom of the PRD, add a rough sprint estimate:
    - Set `phase` to `ARCHITECT`
    - Add `"PLAN"` to `phases_completed`
    - Set `deliverables.prd` to `.bmad-ralph/docs/prd.md`
-   - Set `metrics.stories_total` to the total user story count
+   - Do NOT touch `metrics.stories_total` — it counts implementation stories
+     and is owned by `/br-sprint` (PRD user stories live in the PRD itself)
 
 2. Present a summary: story count by priority, sprint estimate, key features.
 

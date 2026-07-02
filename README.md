@@ -357,7 +357,7 @@ INIT → DISCOVER → PLAN → ARCHITECT → SPRINT_PREP → EXECUTE → REVIEW 
 ## Garde-fous de securite
 
 ### Circuit Breaker
-Si une story echoue **3 fois de suite**, Ralph arrete de retenter et passe a la suivante. Un rapport d'escalation est cree avec :
+Si une story echoue **3 fois de suite** (seuil configurable via `/project:br-config circuit-breaker <N>`), Ralph arrete de retenter et passe a la suivante. Un rapport d'escalation est cree avec :
 - Les 3 tentatives et leurs erreurs
 - L'analyse de la cause racine
 - La recommandation de fix
@@ -380,9 +380,10 @@ Enregistre automatiquement dans `monitor.log` :
 Chaque story reussie = un commit git. Si Ralph deraille, tu peux toujours revenir en arriere avec `git revert`.
 
 ### Limite d'iterations
-- Max **5 tentatives par story**
-- Max **40 iterations par sprint**
-- Au-dela → pause et rapport
+- Circuit breaker : **3 echecs consecutifs** sur une story → escalation (la limite qui declenche en pratique)
+- Max **5 tentatives par story** — plafond dur, utile seulement si tu montes le circuit breaker au-dela
+- Max **40 iterations par sprint** — au-dela → pause et rapport
+- Tout est configurable via `/project:br-config`
 
 ---
 

@@ -21,9 +21,10 @@ If `$ARGUMENTS` contains:
 
 1. Read `project.base_branch` from `.bmad-ralph/state.json`
 2. Check if branch `bmad/sprint-<current>` exists
-3. If **not**: create it from current HEAD:
+3. If **not**: create it from the base branch (NOT from wherever HEAD happens to be —
+   a leftover checkout would silently base the sprint on the wrong commit):
    ```bash
-   git checkout -b bmad/sprint-<current>
+   git checkout <base_branch> && git checkout -b bmad/sprint-<current>
    ```
 4. If **yes**: switch to it:
    ```bash
@@ -97,15 +98,20 @@ you're unsure about. This prevents errors from outdated API knowledge.
    [<timestamp>] STORY-<N.M> ✗ FAIL (iteration <i>): <error summary>
    ```
 4. **Circuit Breaker Check (state file is the source of truth, NOT memory):**
-   - Read `ralph.current_story` and `ralph.current_attempt` from `.bmad-ralph/state.json`
+   - Read `ralph.current_story`, `ralph.current_attempt`, and `ralph.circuit_breaker_threshold` from `.bmad-ralph/state.json` — the threshold is configurable via `/br-config circuit-breaker <N>`, never hardcode it
    - If `ralph.current_story` ≠ this story ID → set it to this story and set `ralph.current_attempt` to 0
    - Increment `ralph.current_attempt` and write it back to the state file
    - Never count failures from conversation memory — after context compaction the count would be lost; the state file survives
-   - If `ralph.current_attempt` < 3 → fix the root cause (not a patch), retry from Step B
-   - If `ralph.current_attempt` ≥ 3 → **ESCALATE** (see Escalation Protocol), then reset `ralph.current_attempt` to 0
+   - If `ralph.current_attempt` < `circuit_breaker_threshold` → fix the root cause (not a patch), retry from Step B
+   - If `ralph.current_attempt` ≥ `circuit_breaker_threshold` → **ESCALATE** (see Escalation Protocol), then reset `ralph.current_attempt` to 0
+   - Hard cap: if total attempts on this story reach `ralph.max_iterations_per_story`, escalate regardless (this cap only matters when the user raises the circuit breaker above it)
 
 ### Step E — Between Stories
-After each story (pass or fail), update the state file with current progress.
+After each story (pass or fail), update the state file:
+- Increment `ralph.total_iterations` and `metrics.ralph_iterations_total` by the number of implement+verify cycles this story took (these counters feed `/br-status` and `/br-metrics` — if you skip this, the dashboards show 0 forever)
+- Update this sprint's entry in the `sprints` array: `stories_completed`, and `status: "IN_PROGRESS"` if not already
+- Update `last_updated_at`
+- If `ralph.total_iterations` gained more than `ralph.max_iterations_per_sprint` during this sprint → pause and report to the user
 
 ## Phase 3: Sprint Completion
 
@@ -120,7 +126,8 @@ After all stories attempted:
      git merge bmad/sprint-<N> --no-ff -m "merge: Sprint <N> complete — <sprint theme>"
      ```
    - If merge conflicts → report them and ask the user to resolve manually
-   - Update state: increment `current_sprint`, set phase to `REVIEW`
+   - Update state: set phase to `REVIEW`, set this sprint's entry to `status: "COMPLETE"`
+   - **Do NOT increment `current_sprint` here** — the review reads `sprint-<current>` to know what to review, and `/br-review` increments it after the quality gate PASSES. Incrementing in both places made the review analyze the wrong sprint and skip one entirely.
    - Say: "Sprint <N> complete! Run `/project:br-review` for quality gate."
 3. If some stories were ESCALATED:
    - Still merge what was completed (partial merge is OK)
@@ -129,7 +136,7 @@ After all stories attempted:
 
 ## Escalation Protocol
 
-When a story fails 3 times (circuit breaker triggered):
+When a story fails `circuit_breaker_threshold` times (circuit breaker triggered):
 
 1. Write detailed error analysis to `.bmad-ralph/logs/escalation-STORY-<N.M>.md`:
    ```markdown
@@ -177,9 +184,21 @@ When `$ARGUMENTS` contains `parallel`:
    })
    ```
    Send all group launches in ONE message so they run concurrently.
-3. Each subagent follows the same Ralph loop for its stories
-4. After all subagents complete → merge worktrees
-5. Run Sprint Verification on merged result
+3. Each subagent follows the same Ralph loop for its stories and reports back:
+   its worktree branch name, completed story IDs, and any escalations
+4. After all subagents complete, merge each worktree branch into the sprint
+   branch **sequentially** (one at a time, so conflicts surface against an
+   up-to-date base):
+   ```bash
+   git checkout bmad/sprint-<N>
+   git merge <worktree-branch-1> --no-ff
+   git merge <worktree-branch-2> --no-ff
+   ```
+   If a merge conflicts → resolve it yourself when the resolution is obvious
+   (imports, adjacent additions); otherwise report and ask the user
+5. Run Sprint Verification on the merged result — parallel groups were verified
+   in isolation, so integration failures show up HERE; treat a failure like a
+   story failure (root-cause it, fix on the sprint branch)
 
 ## Permissions & Autonomy
 
@@ -197,9 +216,11 @@ as the last line of defense, not a license to run anything.
 
 ## Safety Guardrails
 
-1. **Max iterations per story**: 5 (from state.json `ralph.max_iterations_per_story`)
-2. **Circuit breaker**: 3 consecutive failures on same story → escalate
-3. **Never modify**: `.bmad-ralph/state.json` structure (only update values), `.env` files, migration files unless explicitly in story
-4. **Always commit**: after each successful story — this is your checkpoint
-5. **Log everything**: every action, every error, every decision goes to the sprint log
-6. **Max total iterations per sprint**: 40 — if reached, pause and report to user
+All limits come from `state.json` (`ralph.*`) — they are user-configurable via `/br-config`, so read them, never assume the defaults:
+
+1. **Circuit breaker** (`circuit_breaker_threshold`, default 3): consecutive failures on the same story → escalate. This is the limit that normally fires.
+2. **Max iterations per story** (`max_iterations_per_story`, default 5): hard cap on implement+verify cycles for one story — a backstop in case the circuit breaker is configured above it.
+3. **Max total iterations per sprint** (`max_iterations_per_sprint`, default 40): if reached, pause and report to user.
+4. **Never modify**: `.bmad-ralph/state.json` structure (only update values), `.env` files, migration files unless explicitly in story
+5. **Always commit**: after each successful story — this is your checkpoint
+6. **Log everything**: every action, every error, every decision goes to the sprint log

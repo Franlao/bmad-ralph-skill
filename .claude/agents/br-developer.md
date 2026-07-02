@@ -70,7 +70,7 @@ Before doing anything else, use the TodoWrite tool to break the story into discr
    - Is this a type error, a logic error, or an environment issue?
 3. Fix ONLY what is broken (minimal change) — re-read the relevant code before editing
 4. Re-run verification
-5. If you've tried 3 different approaches and still failing, report:
+5. If you've tried as many different approaches as `ralph.circuit_breaker_threshold` in `.bmad-ralph/state.json` (default 3) and are still failing, report:
    ```
    ESCALATE: STORY-X.Y
    Root cause: <your analysis>

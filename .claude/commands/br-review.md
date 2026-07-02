@@ -131,21 +131,31 @@ After all agents complete, read all 4 review documents and create:
 1. Update state:
    - Add review to `deliverables.reviews`
    - Increment `metrics.quality_gate_passes`
+   - Set this sprint's entry in the `sprints` array to `quality_gate: "PASS"`
    - If more sprints remain: set `phase` to `EXECUTE`, increment `current_sprint`
+     (**this is the ONLY place `current_sprint` is incremented** — `/br-build`
+     deliberately leaves it alone so the review targets the right sprint)
    - If last sprint: set `phase` to `DONE`
 2. Say: "Quality gate PASSED. Sprint <N> is done."
    - If more sprints: "Run `/project:br-build` for Sprint <N+1>"
    - If last sprint: "PROJECT COMPLETE! All sprints implemented and reviewed."
 
 ### CONDITIONAL_PASS (Score C, minor issues)
-1. Generate fix stories and append to current sprint
-2. Update state: set phase back to `EXECUTE` (same sprint)
+1. Generate fix stories, append them to the current sprint file (continue the
+   story numbering: STORY-<N>.<last+1>, with files, instructions, acceptance
+   criteria, and a verification command — same format as regular stories)
+2. Update state:
+   - Set phase back to `EXECUTE` (same sprint, do NOT increment `current_sprint`)
+   - Set this sprint's entry to `quality_gate: "CONDITIONAL"` and `status: "IN_PROGRESS"`
+   - Add the new stories to `metrics.stories_total` and the sprint's `stories_total`
 3. Say: "Conditional pass. <X> minor issues to fix. Run `/project:br-build` to fix them."
 
 ### FAIL (Score D or F, critical issues)
-1. Increment `metrics.quality_gate_failures`
+1. Increment `metrics.quality_gate_failures` and set this sprint's entry to
+   `quality_gate: "FAIL"` and `status: "IN_PROGRESS"`
 2. Analyze if the failure is:
-   - **Implementation issue** → Generate fix stories, stay in EXECUTE for same sprint
+   - **Implementation issue** → Generate fix stories (same bookkeeping as
+     CONDITIONAL_PASS), stay in EXECUTE for same sprint
    - **Architecture issue** → Set phase to `ARCHITECT` with a note about what needs redesigning
    - **Story issue** → Set phase to `SPRINT_PREP` to rewrite problematic stories
 3. Say: "Quality gate FAILED. <reason>. Recommended action: <what to do>."

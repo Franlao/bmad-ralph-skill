@@ -83,10 +83,15 @@ INIT → DISCOVER → PLAN → ARCHITECT → SPRINT_PREP → EXECUTE → REVIEW 
 
 #### 4. ARCHITECT (`/br-architect`)
 - Architecture systeme concrete et implementable
+- Decisions de stack argumentees (candidats compares aux exigences du PRD)
 - Schema de base de donnees exact
 - Endpoints API avec types
+- Configuration & variables d'environnement (`.env.example`)
 - Graphe de dependances entre fichiers (ordre d'implementation)
 - Strategie de test
+- **Panel d'experts** : le brouillon est challenge par des personas paralleles
+  (staff engineer, expert securite, expert agentic, chef de projet, devops) —
+  chaque objection est integree ou rejetee par ecrit
 - Produit : `.bmad-ralph/docs/architecture.md`
 
 #### 5. SPRINT (`/br-sprint`)

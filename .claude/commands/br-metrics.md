@@ -18,6 +18,10 @@ Read:
 - `.bmad-ralph/logs/sprint-*.log` → parse PASS/FAIL entries with timestamps
 - `.bmad-ralph/logs/escalation-*.md` → count and analyze escalations
 - `.bmad-ralph/logs/review-sprint-*.md` → quality scores
+- `.bmad-ralph/logs/monitor.log` → `[model:...]` tags = models ACTUALLY used
+  (ground truth from the transcript, stamped by br-monitor.sh). Use these for
+  the cost estimate instead of assuming the configured models, and show a
+  "Models observed" line so the user can verify the per-phase routing applied
 - `git log --grep="feat(sprint-"` → commit timestamps for velocity
 
 ## Display

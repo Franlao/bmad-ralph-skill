@@ -25,10 +25,23 @@ MONITOR_LOG="$LOG_DIR/monitor.log"
 TOOL_NAME=$(br_get_field "tool_name")
 TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null || date +"%Y-%m-%dT%H:%M:%S")
 
+# Observed model — ground truth from the session transcript (every assistant
+# message records the model that actually served it). This is how /br-metrics
+# and the user VERIFY that per-phase model routing is really applied.
+MODEL=""
+TRANSCRIPT=$(br_get_field "transcript_path")
+if [ -n "$TRANSCRIPT" ] && [ -f "$TRANSCRIPT" ] && command -v jq >/dev/null 2>&1; then
+    MODEL=$(tail -c 200000 "$TRANSCRIPT" 2>/dev/null \
+        | jq -r 'select(.message.model? // empty | length > 0) | .message.model' 2>/dev/null \
+        | tail -1)
+fi
+MODEL_TAG=""
+[ -n "$MODEL" ] && MODEL_TAG=" [model:$MODEL]"
+
 case "$TOOL_NAME" in
     Bash)
         COMMAND=$(br_get_field "tool_input.command" | head -c 120)
-        echo "[$TIMESTAMP] BASH: $COMMAND" >> "$MONITOR_LOG"
+        echo "[$TIMESTAMP]$MODEL_TAG BASH: $COMMAND" >> "$MONITOR_LOG"
 
         # tool_response is not guaranteed in the PostToolUse payload —
         # extract an exit code opportunistically if the field exists.
@@ -42,13 +55,13 @@ case "$TOOL_NAME" in
     Edit|Write|NotebookEdit)
         FILE_PATH=$(br_get_field "tool_input.file_path")
         if [ -n "$FILE_PATH" ]; then
-            echo "[$TIMESTAMP] $TOOL_NAME: $FILE_PATH" >> "$MONITOR_LOG"
+            echo "[$TIMESTAMP]$MODEL_TAG $TOOL_NAME: $FILE_PATH" >> "$MONITOR_LOG"
         fi
         ;;
 
     Agent|Task)
         DESC=$(br_get_field "tool_input.description")
-        echo "[$TIMESTAMP] AGENT: $DESC" >> "$MONITOR_LOG"
+        echo "[$TIMESTAMP]$MODEL_TAG AGENT: $DESC" >> "$MONITOR_LOG"
         ;;
 esac
 

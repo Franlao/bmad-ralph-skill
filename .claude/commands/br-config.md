@@ -97,6 +97,20 @@ When `$ARGUMENTS` = `model <role> <value>` or `model <value>`:
    - Command-level model changes apply to NEW invocations of that phase.
    ```
 
+### Verifying the routing actually applies
+
+The `model:` frontmatter is enforced by Claude Code itself (not by the model
+"choosing"), but trust is verified, not assumed: `br-monitor.sh` stamps every
+logged action with the model observed in the session transcript. To audit:
+
+```bash
+grep -o '\[model:[^]]*\]' .bmad-ralph/logs/monitor.log | sort | uniq -c
+```
+
+During a planning phase you should see an opus ID; during `/br-build`, a
+sonnet ID. If the tags don't match the matrix, the phase was launched before
+the frontmatter change (restart it) or the model isn't available on your plan.
+
 ## Change Iteration Limits
 
 When `$ARGUMENTS` = `max-iterations <N>` or `max-sprint-iterations <N>` or `circuit-breaker <N>`:

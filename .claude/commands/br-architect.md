@@ -1,6 +1,7 @@
 ---
 name: br-architect
 description: "BMAD Architecture Phase — Design system architecture from PRD"
+model: opus
 ---
 
 # BMAD-Ralph Architecture Phase (System Architect Agent)

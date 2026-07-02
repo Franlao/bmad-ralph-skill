@@ -408,6 +408,26 @@ Chaque story reussie = un commit git. Si Ralph deraille, tu peux toujours reveni
 
 ---
 
+## Un modele par phase
+
+Chaque phase declare son modele dans son frontmatter — reflexion sur un modele
+fort, execution sur un modele econome :
+
+| Phase | Modele par defaut | Pourquoi |
+|-------|-------------------|----------|
+| discover / plan / architect / sprint / review / auto | `opus` | Synthese, arbitrages, redaction de specs — la qualite ici conditionne tout le reste |
+| build (boucle Ralph) + agents dev/qa | `sonnet` | Implementation guidee par des specs detaillees — volume eleve de tokens, taches cadrees |
+
+Changer un role : `/br-config model architect fable` · tout changer :
+`/br-config model opus` · revenir au modele de la session : `/br-config model dev inherit`
+
+Les sous-agents lances par une phase (chercheurs du discover, panel d'experts
+de l'architecte) heritent du modele de leur phase. Attention : la disponibilite
+d'opus/fable depend de ton abonnement — en cas d'erreur "model not available",
+rabats le role concerne sur `sonnet`.
+
+---
+
 ## Exemples de cas d'usage
 
 ### Projet from scratch

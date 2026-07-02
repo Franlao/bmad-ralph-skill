@@ -10,7 +10,8 @@ View and modify BMAD-Ralph settings without editing files manually.
 ## Arguments
 
 - `$ARGUMENTS` empty → show current config
-- `$ARGUMENTS` = `model <opus|sonnet|haiku>` → change the AI model for agents
+- `$ARGUMENTS` = `model <role> <model>` → change the model for one role (see Model Matrix)
+- `$ARGUMENTS` = `model <model>` → change the model for ALL roles at once
 - `$ARGUMENTS` = `max-iterations <N>` → max retries per story (default: 5)
 - `$ARGUMENTS` = `max-sprint-iterations <N>` → max total iterations per sprint (default: 40)
 - `$ARGUMENTS` = `circuit-breaker <N>` → failures before escalation (default: 3)
@@ -18,17 +19,42 @@ View and modify BMAD-Ralph settings without editing files manually.
 - `$ARGUMENTS` = `guard list` → show protected patterns
 - `$ARGUMENTS` = `reset` → reset all settings to defaults
 
+## Model Matrix — which model runs what
+
+Every role's model lives in a frontmatter `model:` field. Reasoning-heavy
+phases default to `opus`; execution defaults to `sonnet` (cheaper, and story
+implementation is spec-following, not open-ended design):
+
+| Role | File whose frontmatter to edit | Default |
+|------|-------------------------------|---------|
+| `discover` | `.claude/commands/br-discover.md` | opus |
+| `plan` | `.claude/commands/br-plan.md` | opus |
+| `architect` | `.claude/commands/br-architect.md` | opus |
+| `sprint` | `.claude/commands/br-sprint.md` | opus |
+| `review` | `.claude/commands/br-review.md` | opus |
+| `auto` | `.claude/commands/br-auto.md` | opus |
+| `build` | `.claude/commands/br-build.md` | sonnet |
+| `dev` | `.claude/agents/br-developer.md` | sonnet |
+| `qa` | `.claude/agents/br-qa.md` | sonnet |
+
+Subagents launched inline by a phase (discovery researchers, the architect's
+expert panel) inherit that phase's model automatically.
+
 ## Show Current Config (no arguments)
 
-Read `.bmad-ralph/state.json` and `.claude/agents/br-developer.md` and `.claude/agents/br-qa.md`.
+Read `.bmad-ralph/state.json` plus the `model:` frontmatter of the files in the
+Model Matrix.
 
 Display:
 ```
 BMAD-RALPH CONFIGURATION
 ═══════════════════════════════════════════
 
-  Model (developer):      sonnet
-  Model (QA):             sonnet
+  Models
+    discover/plan/architect/sprint/review:  opus
+    build (Ralph loop):                     sonnet
+    dev agent / qa agent:                   sonnet
+
   Max iterations/story:   5
   Max iterations/sprint:  40
   Circuit breaker:        3 failures
@@ -42,23 +68,33 @@ BMAD-RALPH CONFIGURATION
   Monitor hook:           enabled
 
   Change settings:
-    /br-config model opus
+    /br-config model architect fable
+    /br-config model dev sonnet
+    /br-config model opus            (all roles)
     /br-config max-iterations 8
-    /br-config circuit-breaker 5
 ```
+(Group roles that share a model on one line, as above.)
 
 ## Change Model
 
-When `$ARGUMENTS` = `model <value>`:
+When `$ARGUMENTS` = `model <role> <value>` or `model <value>`:
 
-1. Validate: must be `opus`, `sonnet`, or `haiku`
-2. Edit `.claude/agents/br-developer.md`: change the `model:` line in frontmatter
-3. Edit `.claude/agents/br-qa.md`: change the `model:` line in frontmatter
-4. Display:
+1. Validate `<value>`: one of `opus`, `sonnet`, `haiku`, `fable`, `inherit`,
+   or a full model ID (`claude-*`). `inherit` removes the override — the role
+   then follows whatever model the user's session runs.
+2. Validate `<role>` against the Model Matrix (no role = apply to ALL rows).
+3. Edit the `model:` line in the target file's frontmatter (add it if absent,
+   remove it for `inherit`).
+4. Display what changed, plus the relevant caveats:
    ```
-   Model updated: sonnet → opus
-   Both br-developer and br-qa agents will now use opus.
-   Note: opus is more capable but costs ~6x more per token.
+   Model updated: architect  opus → fable
+
+   Notes:
+   - Higher-tier models cost more per token — /br-metrics estimates spend.
+   - fable/opus availability depends on your subscription; if a phase
+     errors with "model not available", set that role back:
+     /br-config model architect sonnet
+   - Command-level model changes apply to NEW invocations of that phase.
    ```
 
 ## Change Iteration Limits
@@ -96,5 +132,6 @@ When `$ARGUMENTS` = `reset`:
    - `ralph.max_iterations_per_story` = 5
    - `ralph.max_iterations_per_sprint` = 40
    - `ralph.circuit_breaker_threshold` = 3
-2. Reset model to `sonnet` in both agent files
+2. Reset models to the Model Matrix defaults (opus for planning phases,
+   sonnet for build/dev/qa)
 3. Display: "All settings reset to defaults."

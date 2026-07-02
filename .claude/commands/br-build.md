@@ -1,6 +1,7 @@
 ---
 name: br-build
 description: "Ralph Wiggum Execution — Autonomous implementation loop with circuit breakers"
+model: sonnet
 ---
 
 # BMAD-Ralph Build Phase (Ralph Wiggum Autonomous Loop)

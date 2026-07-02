@@ -1,6 +1,7 @@
 ---
 name: br-plan
 description: "BMAD Planning Phase — Generate PRD from discovery findings"
+model: opus
 ---
 
 # BMAD-Ralph Planning Phase (Product Manager Agent)

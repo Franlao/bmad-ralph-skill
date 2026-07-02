@@ -180,7 +180,11 @@ sed -e "s|__BR_HOOKS_DIR__|${HOOKS_DIR_REF}|g" \
 
 # Install hooks config
 echo -e "${YELLOW}Configuring hooks...${NC}"
-if [ ! -f "${INSTALL_DIR}/settings.json" ]; then
+if [ -f "${INSTALL_DIR}/settings.local.json" ] && grep -q 'br-guard.sh' "${INSTALL_DIR}/settings.local.json"; then
+    # settings.json and settings.local.json BOTH apply — adding the hooks to
+    # settings.json too would make every hook run twice.
+    echo -e "  ${BLUE}i${NC} BMAD-Ralph hooks already configured in settings.local.json — skipped (avoids double execution)"
+elif [ ! -f "${INSTALL_DIR}/settings.json" ]; then
     cp "$RESOLVED_HOOKS_CONFIG" "${INSTALL_DIR}/settings.json"
     echo -e "  ${GREEN}+${NC} settings.json (guard + auto-format + monitor hooks)"
 elif grep -q 'br-guard.sh' "${INSTALL_DIR}/settings.json"; then

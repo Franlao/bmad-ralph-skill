@@ -420,6 +420,9 @@ fort, execution sur un modele econome :
 
 Changer un role : `/br-config model architect fable` · tout changer :
 `/br-config model opus` · revenir au modele de la session : `/br-config model dev inherit`
+· profil qualite max : `/br-config model best` (fable sur architect+review, opus
+sur les autres phases de reflexion, sonnet sur l'execution — necessite l'acces
+au tier Fable/Mythos)
 
 Les sous-agents lances par une phase (chercheurs du discover, panel d'experts
 de l'architecte) heritent du modele de leur phase. Attention : la disponibilite

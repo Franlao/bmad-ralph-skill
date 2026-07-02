@@ -12,6 +12,7 @@ View and modify BMAD-Ralph settings without editing files manually.
 - `$ARGUMENTS` empty → show current config
 - `$ARGUMENTS` = `model <role> <model>` → change the model for one role (see Model Matrix)
 - `$ARGUMENTS` = `model <model>` → change the model for ALL roles at once
+- `$ARGUMENTS` = `model best` → apply the "best available" profile (fable on the highest-leverage phases — see Model Profiles)
 - `$ARGUMENTS` = `max-iterations <N>` → max retries per story (default: 5)
 - `$ARGUMENTS` = `max-sprint-iterations <N>` → max total iterations per sprint (default: 40)
 - `$ARGUMENTS` = `circuit-breaker <N>` → failures before escalation (default: 3)
@@ -39,6 +40,29 @@ implementation is spec-following, not open-ended design):
 
 Subagents launched inline by a phase (discovery researchers, the architect's
 expert panel) inherit that phase's model automatically.
+
+## Model Profiles
+
+### `model best` — maximum quality where reasoning compounds
+
+Applies in one shot:
+
+| Roles | Model | Rationale |
+|-------|-------|-----------|
+| `architect`, `review` | `fable` | The two highest-leverage judgment points: a design error costs whole sprints; the quality gate is the last line of defense |
+| `discover`, `plan`, `sprint`, `auto` | `opus` | Thinking-heavy, but the fable premium pays less here |
+| `build`, `dev`, `qa` | `sonnet` | Spec-following execution — stories are deliberately written to be implementable by an economical model |
+
+Procedure:
+1. Edit each file's `model:` frontmatter per the table above
+2. Warn: "fable requires access to the Fable/Mythos tier — if `/br-architect`
+   errors with 'model not available', run `/br-config model architect opus`
+   and `/br-config model review opus` to fall back."
+3. Remind: verify with
+   `grep -o '\[model:[^]]*\]' .bmad-ralph/logs/monitor.log | sort | uniq -c`
+
+### `reset` — back to defaults
+The Model Matrix defaults (opus planning / sonnet execution) — see Reset to Defaults.
 
 ## Show Current Config (no arguments)
 

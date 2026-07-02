@@ -7,7 +7,7 @@ description: "Run all BMAD planning phases automatically, then pause before Ralp
 
 Run ALL BMAD planning phases automatically with **zero human intervention**, then pause before launching Ralph execution.
 
-**IMPORTANT**: Use `mode: "bypassPermissions"` on ALL Agent tool calls throughout this pipeline. The user should NOT need to approve anything — the guard hook provides safety.
+**IMPORTANT**: The Agent tool has no per-call permission parameter — autonomy comes from the agent definitions. Delegate implementation work to `br-developer` and reviews to `br-qa` (both declare `permissionMode: bypassPermissions` in their frontmatter); research/planning subagents only need read-only tools and don't prompt.
 
 If `$ARGUMENTS` is provided, use it as the project description for initialization.
 

@@ -112,7 +112,7 @@ You are implementing Sprint <N> of the <project_name> project.
 Read `.bmad-ralph/sprints/sprint-<N>.md` for the full story list.
 
 ## Permissions
-All Agent tool calls use `mode: "bypassPermissions"` — you run fully autonomously.
+You run as the `br-developer` agent, whose definition declares `permissionMode: bypassPermissions` — fully autonomous, no user prompts.
 
 ## Rules
 1. Implement stories IN ORDER (respect dependencies)

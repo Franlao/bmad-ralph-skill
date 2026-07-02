@@ -7,7 +7,7 @@ description: "Change project scope — add/remove features, regenerate affected 
 
 Change the project scope mid-project without breaking what's already built.
 
-**IMPORTANT**: Use `mode: "bypassPermissions"` on all Agent tool calls for autonomous execution.
+**IMPORTANT**: For autonomous execution, delegate any file-writing work to the `br-developer` agent (its frontmatter declares `permissionMode: bypassPermissions`) — the Agent tool has no per-call permission parameter.
 
 ## Arguments
 

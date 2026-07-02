@@ -1,14 +1,17 @@
 #!/bin/bash
 #
-# BMAD-Ralph Post-Edit Hook
-# Auto-formats files after Claude edits them
-# PostToolUse hooks receive tool result on stdin
-# File path is extracted from CLAUDE_TOOL_INPUT env var or parsed from stdin
+# BMAD-Ralph Post-Edit Hook (PostToolUse on Edit|Write)
 #
+# Auto-formats files after Claude edits them. Reads the hook payload JSON
+# on stdin and takes the path from tool_input.file_path
+# (https://code.claude.com/docs/en/hooks.md). Never fails the hook.
 
-# Try to get file path from environment or parse from stdin
-INPUT=$(cat -)
-FILE_PATH=$(echo "$INPUT" | grep -oP '"file_path"\s*:\s*"\K[^"]+' 2>/dev/null || echo "$INPUT" | grep -o '"file_path"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*"file_path"[[:space:]]*:[[:space:]]*"//' | sed 's/"$//')
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+. "$SCRIPT_DIR/br-lib.sh"
+
+BR_HOOK_INPUT=$(cat -)
+
+FILE_PATH=$(br_get_field "tool_input.file_path")
 
 if [ -z "$FILE_PATH" ] || [ ! -f "$FILE_PATH" ]; then
     exit 0

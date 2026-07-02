@@ -2,11 +2,11 @@
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Edit|Write|Bash",
+        "matcher": "Edit|Write|NotebookEdit|Bash",
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/br-guard.sh"
+            "command": "bash \"__BR_HOOKS_DIR__/br-guard.sh\""
           }
         ]
       }
@@ -17,16 +17,16 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/br-post-edit.sh"
+            "command": "bash \"__BR_HOOKS_DIR__/br-post-edit.sh\""
           }
         ]
       },
       {
-        "matcher": "Bash|Edit|Write|Agent",
+        "matcher": "Bash|Edit|Write|Agent|Task",
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/br-monitor.sh"
+            "command": "bash \"__BR_HOOKS_DIR__/br-monitor.sh\""
           }
         ]
       }

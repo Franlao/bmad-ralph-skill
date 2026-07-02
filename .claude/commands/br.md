@@ -65,7 +65,7 @@ Then list completed deliverables with checkmarks and pending ones with empty box
 
 ## Permissions & Autonomy
 
-**ALL Agent tool calls MUST use `mode: "bypassPermissions"`** so the entire pipeline runs without user prompts. The guard hook (`br-guard.sh`) provides safety against dangerous operations.
+**Autonomy comes from the agent definitions, not per-call parameters** (the Agent tool has no `mode` argument): delegate implementation to `br-developer` and reviews to `br-qa`, whose frontmatter declares `permissionMode: bypassPermissions`. The guard hook (`br-guard.sh`) adds a best-effort safety net against destructive operations.
 
 ## Intelligence Rules
 

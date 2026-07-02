@@ -55,7 +55,7 @@ C'est tout. Claude planifie, architecture, decoupe en stories, puis Ralph code c
 ### Le pipeline
 
 ```
-INIT → DISCOVER → PLAN → ARCHITECT → SPRINT → EXECUTE → REVIEW → DONE
+INIT → DISCOVER → PLAN → ARCHITECT → SPRINT_PREP → EXECUTE → REVIEW → DONE
         (BMAD)    (BMAD)   (BMAD)    (BMAD)   (Ralph)   (QA)
 ```
 
@@ -313,10 +313,11 @@ INIT → DISCOVER → PLAN → ARCHITECT → SPRINT → EXECUTE → REVIEW → D
 ├── agents/            ← 2 agents specialises
 │   ├── br-developer.md    Agent dev autonome (sonnet, bypassPermissions)
 │   └── br-qa.md           Agent QA read-only (sonnet, bypassPermissions)
-├── hooks/             ← 3 hooks
+├── hooks/             ← 4 hooks
 │   ├── br-guard.sh        Protection fichiers sensibles + commandes dangereuses
 │   ├── br-monitor.sh      Log automatique de toute activite
-│   └── br-post-edit.sh    Auto-format apres chaque edit
+│   ├── br-post-edit.sh    Auto-format apres chaque edit
+│   └── br-lib.sh          Helpers partages (parsing JSON du payload hook)
 ├── templates/
 │   └── CLAUDE.md          Conventions BMAD-Ralph pour le projet
 └── settings.json      ← Configuration des hooks (guard + monitor + auto-format)
@@ -362,9 +363,11 @@ Si une story echoue **3 fois de suite**, Ralph arrete de retenter et passe a la 
 - La recommandation de fix
 
 ### Hook de protection (`br-guard.sh`)
-Bloque automatiquement :
+Bloque automatiquement (via le protocole `permissionDecision: deny` des hooks Claude Code) :
 - Modification de fichiers `.env`, `.key`, `.pem`, `credentials`
-- Commandes dangereuses : `rm -rf /`, `DROP TABLE`, `git push --force`, `git reset --hard`
+- Commandes dangereuses : `rm -rf` sur cibles larges (`/`, `~`, `.`, `*`), `DROP TABLE`, `git push --force` (mais `--force-with-lease` reste autorise), `git reset --hard`, `git clean -f`, `curl | sh`, ...
+
+C'est une blocklist best-effort — un filet de securite, pas un sandbox.
 
 ### Hook de monitoring (`br-monitor.sh`)
 Enregistre automatiquement dans `monitor.log` :

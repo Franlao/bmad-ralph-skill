@@ -79,10 +79,11 @@ you're unsure about. This prevents errors from outdated API knowledge.
    ```
    [<timestamp>] STORY-<N.M> ✓ PASS (iteration <i>)
    ```
-3. Update `.bmad-ralph/state.json`:
+4. Update `.bmad-ralph/state.json`:
    - Increment `metrics.stories_completed`
    - Add story ID to `deliverables.implementations`
-4. Move to next story
+   - Reset `ralph.current_attempt` to 0
+5. Move to next story
 
 **If verification FAILS:**
 1. **Step back — reason before touching code:**
@@ -95,10 +96,13 @@ you're unsure about. This prevents errors from outdated API knowledge.
    ```
    [<timestamp>] STORY-<N.M> ✗ FAIL (iteration <i>): <error summary>
    ```
-4. **Circuit Breaker Check:**
-   - Count how many times this story has failed
-   - If < 3 failures → fix the root cause (not a patch), retry from Step B
-   - If = 3 failures → **ESCALATE** (see Escalation Protocol)
+4. **Circuit Breaker Check (state file is the source of truth, NOT memory):**
+   - Read `ralph.current_story` and `ralph.current_attempt` from `.bmad-ralph/state.json`
+   - If `ralph.current_story` ≠ this story ID → set it to this story and set `ralph.current_attempt` to 0
+   - Increment `ralph.current_attempt` and write it back to the state file
+   - Never count failures from conversation memory — after context compaction the count would be lost; the state file survives
+   - If `ralph.current_attempt` < 3 → fix the root cause (not a patch), retry from Step B
+   - If `ralph.current_attempt` ≥ 3 → **ESCALATE** (see Escalation Protocol), then reset `ralph.current_attempt` to 0
 
 ### Step E — Between Stories
 After each story (pass or fail), update the state file with current progress.
@@ -162,29 +166,34 @@ When a story fails 3 times (circuit breaker triggered):
 When `$ARGUMENTS` contains `parallel`:
 
 1. Read the sprint file for stories with the same `Parallel Group`
-2. Launch one **subagent per parallel group** simultaneously:
+2. Launch one **subagent per parallel group** simultaneously — always use the
+   `br-developer` agent (it carries the Ralph protocol, quality rules, and
+   `permissionMode: bypassPermissions` in its definition), with worktree isolation:
    ```
-   Agent 1 → stories in Group A (in a worktree)
-   Agent 2 → stories in Group B (in a worktree)
-   Agent 3 → stories in Group C (in a worktree)
+   Agent({
+     subagent_type: "br-developer",
+     isolation: "worktree",
+     prompt: "<sprint file path> + <story IDs for this group> + <architecture doc path>"
+   })
    ```
+   Send all group launches in ONE message so they run concurrently.
 3. Each subagent follows the same Ralph loop for its stories
 4. After all subagents complete → merge worktrees
 5. Run Sprint Verification on merged result
 
 ## Permissions & Autonomy
 
-**CRITICAL**: All Agent tool calls in this phase MUST use `mode: "bypassPermissions"` so Ralph runs fully autonomously without user prompts. The guard hook (`br-guard.sh`) provides safety — permissions bypass is safe here.
+Autonomy comes from the **agent definitions**, not from per-call parameters: the
+Agent tool has no `mode`/`bypassPermissions` argument. `br-developer` declares
+`permissionMode: bypassPermissions` in its frontmatter, so any work delegated to
+it runs without user prompts. Always delegate implementation work to
+`br-developer` (never `general-purpose`, which would prompt for permissions and
+lacks the Ralph protocol).
 
-For parallel mode, also set `isolation: "worktree"` on each parallel Agent call:
-```
-Agent({
-  mode: "bypassPermissions",
-  isolation: "worktree",
-  subagent_type: "general-purpose",
-  ...
-})
-```
+The guard hook (`br-guard.sh`) is a best-effort safety net that blocks common
+destructive operations (recursive deletes on broad targets, force pushes, hard
+resets, piping remote scripts into a shell, ...). It is NOT a sandbox — treat it
+as the last line of defense, not a license to run anything.
 
 ## Safety Guardrails
 

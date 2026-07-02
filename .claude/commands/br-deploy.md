@@ -7,7 +7,7 @@ description: "Generate deployment artifacts — Dockerfile, CI/CD, deploy instru
 
 Generate deployment artifacts after the project is built. Works at any phase but best used after `DONE` or after a successful sprint review.
 
-**IMPORTANT**: Use `mode: "bypassPermissions"` on all Agent tool calls for autonomous execution.
+**IMPORTANT**: For autonomous execution, delegate file-writing work to the `br-developer` agent (its frontmatter declares `permissionMode: bypassPermissions`) — the Agent tool has no per-call permission parameter.
 
 ## Arguments
 

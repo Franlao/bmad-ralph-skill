@@ -1,54 +1,53 @@
 #!/bin/bash
 #
-# BMAD-Ralph Monitor Hook
-# Runs AFTER every tool use to track progress and detect issues
-# Hook type: PostToolUse (all tools)
+# BMAD-Ralph Monitor Hook (PostToolUse)
 #
+# Logs tool activity to .bmad-ralph/logs/ so /project:br-debug and
+# /project:br-metrics have raw data. Reads the hook payload JSON on stdin
+# (tool_name + tool_input, per https://code.claude.com/docs/en/hooks.md).
+# Never blocks anything — always exits 0.
 
-# Only activate if this is a BMAD-Ralph project
+# Only activate inside a BMAD-Ralph project (hooks run with cwd = project dir)
 STATE_FILE=".bmad-ralph/state.json"
 if [ ! -f "$STATE_FILE" ]; then
     exit 0
 fi
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+. "$SCRIPT_DIR/br-lib.sh"
+
+BR_HOOK_INPUT=$(cat -)
+
 LOG_DIR=".bmad-ralph/logs"
 mkdir -p "$LOG_DIR"
-
 MONITOR_LOG="$LOG_DIR/monitor.log"
-TOOL_NAME="${CLAUDE_TOOL_NAME:-unknown}"
+
+TOOL_NAME=$(br_get_field "tool_name")
 TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null || date +"%Y-%m-%dT%H:%M:%S")
 
-# Read tool input from stdin
-INPUT=$(cat -)
-
-# Extract relevant info based on tool type
 case "$TOOL_NAME" in
     Bash)
-        # Extract command from input
-        COMMAND=$(echo "$INPUT" | grep -o '"command"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*"command"[[:space:]]*:[[:space:]]*"//' | sed 's/"$//' | head -c 100)
+        COMMAND=$(br_get_field "tool_input.command" | head -c 120)
         echo "[$TIMESTAMP] BASH: $COMMAND" >> "$MONITOR_LOG"
 
-        # Detect test/build failures from exit codes
-        EXIT_CODE=$(echo "$INPUT" | grep -o '"exit_code"[[:space:]]*:[[:space:]]*[0-9]*' | head -1 | sed 's/.*:[[:space:]]*//')
+        # tool_response is not guaranteed in the PostToolUse payload —
+        # extract an exit code opportunistically if the field exists.
+        EXIT_CODE=$(br_get_field "tool_response.exit_code")
         if [ -n "$EXIT_CODE" ] && [ "$EXIT_CODE" != "0" ]; then
-            echo "[$TIMESTAMP] !! FAIL: Command exited with code $EXIT_CODE" >> "$MONITOR_LOG"
-
-            # Write to a separate error log for quick scanning
+            echo "[$TIMESTAMP] !! FAIL: exit $EXIT_CODE" >> "$MONITOR_LOG"
             echo "[$TIMESTAMP] $COMMAND → exit $EXIT_CODE" >> "$LOG_DIR/errors.log"
         fi
         ;;
 
-    Edit|Write)
-        # Track file modifications
-        FILE_PATH=$(echo "$INPUT" | grep -o '"file_path"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*"file_path"[[:space:]]*:[[:space:]]*"//' | sed 's/"$//')
+    Edit|Write|NotebookEdit)
+        FILE_PATH=$(br_get_field "tool_input.file_path")
         if [ -n "$FILE_PATH" ]; then
             echo "[$TIMESTAMP] $TOOL_NAME: $FILE_PATH" >> "$MONITOR_LOG"
         fi
         ;;
 
-    Agent)
-        # Track subagent launches
-        DESC=$(echo "$INPUT" | grep -o '"description"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*"description"[[:space:]]*:[[:space:]]*"//' | sed 's/"$//')
+    Agent|Task)
+        DESC=$(br_get_field "tool_input.description")
         echo "[$TIMESTAMP] AGENT: $DESC" >> "$MONITOR_LOG"
         ;;
 esac

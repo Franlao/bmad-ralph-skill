@@ -33,7 +33,7 @@ Log all results.
 
 ## Step 3: Code Review (4 Parallel Subagents)
 
-Launch 4 review subagents simultaneously. **Set `mode: "bypassPermissions"` on ALL Agent calls** for fully autonomous execution:
+Launch 4 review subagents simultaneously (in ONE message), using `subagent_type: "br-qa"` — it is read-only and declares `permissionMode: bypassPermissions` in its frontmatter, so reviews run without prompts:
 
 ### Agent 1: Correctness Review
 ```

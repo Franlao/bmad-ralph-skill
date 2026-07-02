@@ -18,7 +18,7 @@ Launch **4 parallel research subagents** to analyze the project from every angle
 
 **MAXIMIZE EFFICIENCY**: Launch all 4 agents **simultaneously** in a single message with 4 tool calls. Never make sequential agent calls when they can be batched.
 
-**IMPORTANT**: Set `mode: "bypassPermissions"` on ALL Agent calls so they run fully autonomously without prompting the user.
+**IMPORTANT**: Research subagents only need read-only tools (Read, Glob, Grep, WebSearch, WebFetch), so they run without permission prompts — the Agent tool has no per-call permission parameter anyway.
 
 ### Agent 1: Market & Problem Analysis
 ```

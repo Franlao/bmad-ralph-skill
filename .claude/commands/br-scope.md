@@ -42,9 +42,9 @@ PROJECT SCOPE
   Stories: 11 done / 28 total
 
   Change scope:
-    /project:br-scope add "Export to CSV"
-    /project:br-scope remove "Dark mode"
-    /project:br-scope remove STORY-4.3
+    /br-scope add "Export to CSV"
+    /br-scope remove "Dark mode"
+    /br-scope remove STORY-4.3
 ```
 
 ## Add Feature
@@ -100,7 +100,7 @@ When `$ARGUMENTS` = `remove "<feature>"` or `remove STORY-X.Y`:
 ### Remove by Story ID
 1. Find the story in sprint files
 2. If **already completed** (has commit):
-   - Warn: "This story is already implemented. Use `/project:br-rollback story STORY-X.Y` to revert the code."
+   - Warn: "This story is already implemented. Use `/br-rollback story STORY-X.Y` to revert the code."
    - Do NOT auto-rollback — let the user decide
 3. If **pending** (not implemented):
    - Mark as `SKIPPED` in the sprint file (add `**Status: SKIPPED**` to the story)

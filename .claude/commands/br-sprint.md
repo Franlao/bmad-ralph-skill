@@ -156,4 +156,4 @@ Skip stories that already have a commit message matching their ID.
 
 2. Present: number of sprints, stories per sprint, estimated total Ralph iterations.
 
-3. Say: "Sprint stories ready. Run `/project:br-build` to launch Ralph Wiggum autonomous execution for Sprint 1. You can also run `/project:br-build auto` to run all sprints sequentially."
+3. Say: "Sprint stories ready. Run `/br-build` to launch Ralph Wiggum autonomous execution for Sprint 1. You can also run `/br-build auto` to run all sprints sequentially."

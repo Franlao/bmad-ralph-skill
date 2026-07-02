@@ -141,4 +141,4 @@ After writing the architecture, validate it by checking:
 
 2. Present: key architecture decisions, tech stack, estimated file count.
 
-3. Say: "Architecture complete. Run `/project:br-sprint` to break this into implementable sprint stories."
+3. Say: "Architecture complete. Run `/br-sprint` to break this into implementable sprint stories."

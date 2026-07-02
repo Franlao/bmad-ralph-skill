@@ -39,9 +39,9 @@ AVAILABLE ROLLBACKS
   [sprint 1] Rollback entire Sprint 1 (6 stories)
 
 Usage:
-  /project:br-rollback last
-  /project:br-rollback story STORY-2.3
-  /project:br-rollback sprint 2
+  /br-rollback last
+  /br-rollback story STORY-2.3
+  /br-rollback sprint 2
 ```
 
 ## Story Rollback
@@ -74,7 +74,7 @@ Usage:
    Files:    3 files restored
 
    The story is now available for re-execution.
-   Run /project:br-build story STORY-X.Y to re-implement it.
+   Run /br-build story STORY-X.Y to re-implement it.
    ```
 
 ## Sprint Rollback

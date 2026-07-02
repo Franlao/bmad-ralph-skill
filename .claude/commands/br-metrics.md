@@ -9,7 +9,7 @@ Analyze Ralph's performance across the project.
 
 ## Pre-check
 
-Read `.bmad-ralph/state.json`. If no stories have been executed, say "No execution data yet. Run `/project:br-build` first."
+Read `.bmad-ralph/state.json`. If no stories have been executed, say "No execution data yet. Run `/br-build` first."
 
 ## Data Sources
 
@@ -74,10 +74,13 @@ Rough heuristics per iteration:
 - ~5,000 input tokens (reading story + architecture + existing code)
 - ~2,500 output tokens (code generation + tool calls)
 
-Per model pricing (estimates):
-- **Sonnet**: $3/M input, $15/M output → ~$0.05/iteration
-- **Opus**: $15/M input, $75/M output → ~$0.25/iteration
-- **Haiku**: $0.25/M input, $1.25/M output → ~$0.005/iteration
+**Pricing: never trust a hardcoded table — prices change.** Use your current
+knowledge of Anthropic per-token pricing for the models configured in the
+agents' frontmatter; if unsure, check https://claude.com/pricing (via WebFetch
+or the fetch MCP). Always print which prices you used and their source, e.g.:
+```
+Based on Sonnet at $X/M input, $Y/M output (source: claude.com/pricing, checked today)
+```
 
 Total = iterations × cost per iteration. Clearly label as estimates.
 

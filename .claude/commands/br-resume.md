@@ -23,7 +23,7 @@ If there are uncommitted changes:
 
 ## Step 1: Load State
 
-Read `.bmad-ralph/state.json`. If it doesn't exist, say "No project found. Run `/project:br-init`."
+Read `.bmad-ralph/state.json`. If it doesn't exist, say "No project found. Run `/br-init`."
 
 ## Step 2: Analyze Current State
 

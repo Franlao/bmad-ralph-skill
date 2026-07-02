@@ -46,7 +46,7 @@ BMAD-RALPH UPDATE AVAILABLE
     def5678 Fix guard hook pattern matching
     ghi9012 Add br-metrics dashboard
 
-  Run /project:br-update to install
+  Run /br-update to install
 ```
 
 ## Update and Re-install

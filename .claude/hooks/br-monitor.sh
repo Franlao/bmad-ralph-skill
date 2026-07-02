@@ -2,8 +2,8 @@
 #
 # BMAD-Ralph Monitor Hook (PostToolUse)
 #
-# Logs tool activity to .bmad-ralph/logs/ so /project:br-debug and
-# /project:br-metrics have raw data. Reads the hook payload JSON on stdin
+# Logs tool activity to .bmad-ralph/logs/ so /br-debug and
+# /br-metrics have raw data. Reads the hook payload JSON on stdin
 # (tool_name + tool_input, per https://code.claude.com/docs/en/hooks.md).
 # Never blocks anything — always exits 0.
 

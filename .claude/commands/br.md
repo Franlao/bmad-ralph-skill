@@ -20,19 +20,19 @@ INIT → DISCOVER → PLAN → ARCHITECT → SPRINT_PREP → EXECUTE → REVIEW 
 
 ## Your First Action
 
-Read `.bmad-ralph/state.json` to understand the current state. If it doesn't exist, tell the user to run `/project:br-init` first.
+Read `.bmad-ralph/state.json` to understand the current state. If it doesn't exist, tell the user to run `/br-init` first.
 
 Based on the current phase, guide the user:
 
 | Phase | What to do | Command |
 |-------|-----------|---------|
-| `INIT` | Project not initialized | `/project:br-init <description>` |
-| `DISCOVER` | Run business/technical discovery | `/project:br-discover` |
-| `PLAN` | Generate PRD from discovery | `/project:br-plan` |
-| `ARCHITECT` | Design system architecture | `/project:br-architect` |
-| `SPRINT_PREP` | Break into sprint stories | `/project:br-sprint` |
-| `EXECUTE` | Launch Ralph autonomous loop | `/project:br-build` |
-| `REVIEW` | Quality gate review | `/project:br-review` |
+| `INIT` | Project not initialized | `/br-init <description>` |
+| `DISCOVER` | Run business/technical discovery | `/br-discover` |
+| `PLAN` | Generate PRD from discovery | `/br-plan` |
+| `ARCHITECT` | Design system architecture | `/br-architect` |
+| `SPRINT_PREP` | Break into sprint stories | `/br-sprint` |
+| `EXECUTE` | Launch Ralph autonomous loop | `/br-build` |
+| `REVIEW` | Quality gate review | `/br-review` |
 | `DONE` | Project complete | Celebrate! |
 
 ## Arguments Handling

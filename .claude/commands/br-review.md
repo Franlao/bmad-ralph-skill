@@ -137,7 +137,7 @@ After all agents complete, read all 4 review documents and create:
      deliberately leaves it alone so the review targets the right sprint)
    - If last sprint: set `phase` to `DONE`
 2. Say: "Quality gate PASSED. Sprint <N> is done."
-   - If more sprints: "Run `/project:br-build` for Sprint <N+1>"
+   - If more sprints: "Run `/br-build` for Sprint <N+1>"
    - If last sprint: "PROJECT COMPLETE! All sprints implemented and reviewed."
 
 ### CONDITIONAL_PASS (Score C, minor issues)
@@ -148,7 +148,7 @@ After all agents complete, read all 4 review documents and create:
    - Set phase back to `EXECUTE` (same sprint, do NOT increment `current_sprint`)
    - Set this sprint's entry to `quality_gate: "CONDITIONAL"` and `status: "IN_PROGRESS"`
    - Add the new stories to `metrics.stories_total` and the sprint's `stories_total`
-3. Say: "Conditional pass. <X> minor issues to fix. Run `/project:br-build` to fix them."
+3. Say: "Conditional pass. <X> minor issues to fix. Run `/br-build` to fix them."
 
 ### FAIL (Score D or F, critical issues)
 1. Increment `metrics.quality_gate_failures` and set this sprint's entry to

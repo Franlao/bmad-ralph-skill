@@ -2,7 +2,7 @@
 
 ## State Management
 - State file: `.bmad-ralph/state.json` — source of truth for project phase and progress
-- Never modify state.json manually — use `/project:br-*` commands
+- Never modify state.json manually — use `/br-*` commands
 - Update `last_updated_at` after every state change
 
 ## Development Rules

@@ -95,7 +95,7 @@ Cross-reference:
 ║  1. [CRITICAL] Uncommitted changes detected               ║
 ║     → Ralph was interrupted during STORY-1.4              ║
 ║     → Files changed: src/routes/notes.ts, src/app.ts      ║
-║     → Fix: run /project:br-build story STORY-1.4          ║
+║     → Fix: run /br-build story STORY-1.4          ║
 ║              or git checkout . to revert                   ║
 ║                                                           ║
 ║  2. [WARNING] state.json says 5 stories done,             ║
@@ -112,8 +112,8 @@ Cross-reference:
 ╠═══════════════════════════════════════════════════════════╣
 ║  SUGGESTED FIXES:                                         ║
 ║                                                           ║
-║  1. /project:br-build story STORY-1.4                     ║
-║  2. /project:br-fix (auto-fix detected issues)            ║
+║  1. /br-build story STORY-1.4                     ║
+║  2. /br-fix (auto-fix detected issues)            ║
 ║  3. Edit .bmad-ralph/docs/architecture.md to add           ║
 ║     JWT_SECRET to config section                           ║
 ║                                                           ║
@@ -146,5 +146,5 @@ Auto-fixable issues found:
   2. Clean uncommitted changes and retry STORY-1.4
   3. Re-run verification on STORY-1.3 and commit if passing
 
-Run /project:br-fix to apply all auto-fixes, or fix manually.
+Run /br-fix to apply all auto-fixes, or fix manually.
 ```

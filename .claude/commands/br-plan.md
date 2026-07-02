@@ -113,4 +113,4 @@ At the bottom of the PRD, add a rough sprint estimate:
 
 2. Present a summary: story count by priority, sprint estimate, key features.
 
-3. Say: "PRD complete. Review it above. When ready, run `/project:br-architect` to design the system architecture."
+3. Say: "PRD complete. Review it above. When ready, run `/br-architect` to design the system architecture."

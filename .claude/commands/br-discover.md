@@ -86,4 +86,4 @@ Write your findings to .bmad-ralph/docs/discovery-codebase.md
    - Set `deliverables.business_brief` to `.bmad-ralph/docs/business-brief.md`
 
 4. Present the business brief summary to the user and say:
-   "Discovery complete. Review the brief above. When ready, run `/project:br-plan` to generate the PRD."
+   "Discovery complete. Review the brief above. When ready, run `/br-plan` to generate the PRD."

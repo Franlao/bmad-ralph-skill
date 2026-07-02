@@ -65,9 +65,9 @@ Display:
   Review the deliverables above before launching Ralph.
 
   When ready:
-  /project:br-build           → Run Sprint 1
-  /project:br-build auto      → Run ALL sprints sequentially
-  /project:br-build parallel  → Use parallel subagents
+  /br-build           → Run Sprint 1
+  /br-build auto      → Run ALL sprints sequentially
+  /br-build parallel  → Use parallel subagents
 
 ═══════════════════════════════════════════════════
 ```
@@ -77,5 +77,5 @@ Display:
 If any phase fails:
 1. Log the error
 2. Show what went wrong
-3. Suggest: "Run `/project:br-status` to see where we are, then retry the failed phase manually"
+3. Suggest: "Run `/br-status` to see where we are, then retry the failed phase manually"
 4. Do NOT proceed to the next phase

@@ -5,7 +5,7 @@ description: "Auto-fix detected issues — repair state, retry failed stories, c
 
 # BMAD-Ralph Auto-Fix
 
-Automatically repair common issues detected by `/project:br-debug`.
+Automatically repair common issues detected by `/br-debug`.
 
 If `$ARGUMENTS` is provided:
 - "state" → fix only state.json inconsistencies
@@ -88,6 +88,6 @@ When a phase is stuck or the user wants to redo it:
    REMAINING ISSUES:
      [ ] STORY-1.6 needs architecture amendment (human decision)
 
-   NEXT: Run /project:br-build story STORY-1.4 to retry
+   NEXT: Run /br-build story STORY-1.4 to retry
    ```
 3. Update state.json with fix log

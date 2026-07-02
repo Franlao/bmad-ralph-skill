@@ -7,7 +7,7 @@ description: "Show BMAD-Ralph project status dashboard"
 
 Read `.bmad-ralph/state.json` and display the project status.
 
-If the file doesn't exist, say: "No BMAD-Ralph project initialized. Run `/project:br-init <description>` to start."
+If the file doesn't exist, say: "No BMAD-Ralph project initialized. Run `/br-init <description>` to start."
 
 ## Display Format
 
@@ -55,7 +55,7 @@ If the file doesn't exist, say: "No BMAD-Ralph project initialized. Run `/projec
 ╠═══════════════════════════════════════════════════════════╣
 ║  NEXT ACTION                                              ║
 ║                                                           ║
-║  Run: /project:br-architect                               ║
+║  Run: /br-architect                               ║
 ║                                                           ║
 ╚═══════════════════════════════════════════════════════════╝
 ```

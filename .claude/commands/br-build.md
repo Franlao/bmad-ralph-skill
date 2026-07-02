@@ -128,11 +128,11 @@ After all stories attempted:
    - If merge conflicts → report them and ask the user to resolve manually
    - Update state: set phase to `REVIEW`, set this sprint's entry to `status: "COMPLETE"`
    - **Do NOT increment `current_sprint` here** — the review reads `sprint-<current>` to know what to review, and `/br-review` increments it after the quality gate PASSES. Incrementing in both places made the review analyze the wrong sprint and skip one entirely.
-   - Say: "Sprint <N> complete! Run `/project:br-review` for quality gate."
+   - Say: "Sprint <N> complete! Run `/br-review` for quality gate."
 3. If some stories were ESCALATED:
    - Still merge what was completed (partial merge is OK)
    - List the escalated stories
-   - Say: "Sprint <N> partially complete. <X> stories escalated. Run `/project:br-review` to assess, or `/project:br-build story STORY-X.Y` to retry specific stories."
+   - Say: "Sprint <N> partially complete. <X> stories escalated. Run `/br-review` to assess, or `/br-build story STORY-X.Y` to retry specific stories."
 
 ## Escalation Protocol
 

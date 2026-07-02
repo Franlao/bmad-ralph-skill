@@ -1,6 +1,7 @@
 ---
 name: br-sprint
 description: "BMAD Sprint Prep — Break architecture into hyper-detailed stories for Ralph"
+model: opus
 ---
 
 # BMAD-Ralph Sprint Preparation (Scrum Master Agent)

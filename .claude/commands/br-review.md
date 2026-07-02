@@ -1,6 +1,7 @@
 ---
 name: br-review
 description: "Quality Gate Review — Validate sprint implementation against specs"
+model: opus
 ---
 
 # BMAD-Ralph Review Phase (QA Agent)

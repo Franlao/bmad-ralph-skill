@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"__BR_HOOKS_DIR__/br-guard.sh\""
+            "command": "__BR_BASH__ \"__BR_HOOKS_DIR__/br-guard.sh\""
           }
         ]
       }
@@ -17,7 +17,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"__BR_HOOKS_DIR__/br-post-edit.sh\""
+            "command": "__BR_BASH__ \"__BR_HOOKS_DIR__/br-post-edit.sh\""
           }
         ]
       },
@@ -26,7 +26,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"__BR_HOOKS_DIR__/br-monitor.sh\""
+            "command": "__BR_BASH__ \"__BR_HOOKS_DIR__/br-monitor.sh\""
           }
         ]
       }

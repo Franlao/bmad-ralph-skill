@@ -1,6 +1,7 @@
 ---
 name: br-auto
 description: "Run all BMAD planning phases automatically, then pause before Ralph execution"
+model: opus
 ---
 
 # BMAD-Ralph Auto Mode — Full Pipeline

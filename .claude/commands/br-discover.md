@@ -1,6 +1,7 @@
 ---
 name: br-discover
 description: "BMAD Discovery Phase — parallel research with specialized subagents"
+model: opus
 ---
 
 # BMAD-Ralph Discovery Phase

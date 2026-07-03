@@ -51,15 +51,56 @@ PROJECT SCOPE
 
 When `$ARGUMENTS` = `add "<description>"`:
 
+### Step 0: Size the Request — the rigor must match the feature
+
+Adding a feature through br-scope must NOT become a way to bypass the
+discovery/architecture rigor of the main pipeline. Classify first:
+
+**SMALL** — ALL of these hold: fits in existing components, no new entity/table,
+no new external dependency or service, no new auth/permission surface,
+≤ 3 stories. → Go directly to Step 1 (lightweight flow).
+
+**SIGNIFICANT** — anything else (new component, schema change, new dependency,
+new integration, security surface, > 3 stories). → Run the **mini-pipeline**
+below BEFORE Step 2. Tell the user which classification you chose and why,
+in one line.
+
+**RE-ARCHITECTURE** — the feature *invalidates* existing architecture decisions
+(not just extends them): say so, and recommend setting phase back to `ARCHITECT`
+via `/br-fix` instead of squeezing it through scope-add. Do not proceed alone.
+
+### Mini-Pipeline for SIGNIFICANT features (scoped versions of the real phases)
+
+1. **Scoped discovery** — launch 2 parallel read-only subagents on the FEATURE
+   (not the whole product):
+   - *Technical feasibility*: current APIs/libs needed (WebSearch, never from
+     memory), risks, what the dependency manifest already provides
+   - *Codebase integration*: where it plugs in, which existing patterns/utilities
+     to reuse, what it must not break
+   Both tag claims `[FACT — source] / [ASSUMPTION] / [UNKNOWN]` (same rules as
+   `/br-discover`). Write to `.bmad-ralph/docs/discovery-feature-<slug>.md`.
+2. **Architecture amendment** — in `architecture-amendments.md`, using the SAME
+   standards as `/br-architect`: a Decision Record for any new tech choice
+   (candidates, criteria, rejected-because), env vars added to the section 7b
+   inventory, right-sizing rule applies (no requirement-free complexity).
+3. **Mini expert panel** — 2 personas in parallel (staff engineer + agentic
+   expert; add the security expert if the feature touches auth/user data),
+   reviewing the amendment. Integrate or overrule findings in writing.
+4. Then continue to Step 2 — stories get the FULL `/br-sprint` format
+   (runnable verification commands, interface contracts, dependencies).
+
 ### Step 1: Analyze Impact
-1. Read current PRD, architecture, and sprint files
+1. Read current PRD, architecture (+ amendments), and sprint files
 2. Analyze the new feature against existing architecture:
    - What new components/endpoints are needed?
    - What existing code needs to change?
    - What dependencies are required?
 
 ### Step 2: Generate New Stories
-1. Create user stories for the new feature (same format as existing stories)
+1. Create user stories for the new feature (same format and quality bar as
+   existing stories: exact files, step-by-step instructions, runnable
+   verification command, acceptance criteria, interface contract if other
+   stories will depend on them)
 2. Assign priority (ask user or infer from description)
 3. Determine dependencies on existing stories
 

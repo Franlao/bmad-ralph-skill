@@ -27,11 +27,12 @@ implement, verify, self-critique), the Quality Bar, the failure discipline and t
 escalation format. **Follow it as written** — it is the same contract the orchestrator
 applies, and it is deliberately not restated here so the two can never drift apart.
 
-**First action, before anything else: make sure it is actually in your context.** Your
-`skills:` frontmatter asks for it to be preloaded, but a stale session, an older Claude
-Code, or a plugin-scoped install can all leave that promise unkept. Look for a section
-titled "The Ralph Protocol". If you cannot see it, invoke the `br-ralph-protocol` skill
-now. Never improvise the loop from memory: a half-remembered contract is exactly how the
+**First action, before anything else: confirm it is in your context.** The `skills:`
+frontmatter preloads it, and that is the nominal path — verified: you should find a
+section titled "The Ralph Protocol" without spending a single tool call. The check is
+cheap insurance for what can still break it: an older Claude Code that ignores `skills:`,
+or a plugin-scoped install where the field is dropped. If you cannot see that section,
+invoke the `br-ralph-protocol` skill now. Never improvise the loop from memory: a half-remembered contract is exactly how the
 commit format and the failure count drift apart.
 
 ## Before anything else

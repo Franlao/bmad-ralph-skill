@@ -387,6 +387,10 @@ frontmatter ; `/br-build`, `/br-resume` et `/br-fix` le chargent par son nom. Au
 chemin n'est code en dur : c'est ce qui permet a la meme regle de s'appliquer en
 installation projet comme en installation globale.
 
+Le prechargement est verifie : sonde sur `br-developer`, qui cite le protocole mot pour
+mot avec zero appel d'outil. Le repli qui recharge le skill s'il manque reste en place
+pour les versions de Claude Code qui ignorent `skills:`.
+
 Si tu modifies une regle de la boucle, tu la modifies la — et `bash tests/run-structure-tests.sh`
 verifie qu'aucune copie n'est reapparue ailleurs.
 

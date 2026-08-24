@@ -73,9 +73,11 @@ fi
 check "le skill préchargé existe" \
     "$([ -f .claude/skills/br-ralph-protocol/SKILL.md ] || echo 'br-ralph-protocol/SKILL.md absent')"
 
-# 6b — the fallback matters more than the preload: `skills:` can silently fail
-#      (stale session, older Claude Code), and an agent that improvises the loop
-#      from memory is the exact failure this refactor exists to prevent.
+# 6b — preloading is verified to work (a br-developer probe quoted the protocol
+#      verbatim with zero tool calls), so the fallback is compat insurance, not the
+#      nominal path. Keep it: `skills:` is still ignored by older Claude Code and
+#      dropped for plugin-scoped agents, and an agent that improvises the loop from
+#      memory is the exact failure this refactor exists to prevent.
 if grep -q 'invoke the `br-ralph-protocol` skill' .claude/agents/br-developer.md; then
     ok "br-developer sait charger le protocole si le préchargement échoue"
 else

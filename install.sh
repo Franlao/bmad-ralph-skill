@@ -23,6 +23,28 @@ echo ""
 
 BR_HOOK_SCRIPTS="br-guard.sh br-monitor.sh br-post-edit.sh br-lib.sh"
 
+# BMAD-Ralph shipped as .claude/commands/br*.md before the move to
+# .claude/skills/<name>/SKILL.md. A skill wins over a same-named command, so a
+# leftover command file is inert — but it still shows up in listings and in
+# /br-config. Remove ours, and only ours: br-*.md plus br.md, never a bare br*
+# glob that would take the user's own branch.md.
+remove_legacy_commands() {
+    local dir="$1" label="$2" found=0
+    for cmd in "${dir}/commands"/br-*.md "${dir}/commands/br.md"; do
+        if [ -f "$cmd" ]; then
+            rm "$cmd" && found=1
+            [ -n "$label" ] && echo -e "  ${RED}-${NC} ${label}$(basename "$cmd")"
+        fi
+    done
+    # rmdir fails when the user keeps commands of their own there — that is a
+    # normal outcome, not an error. Without the `|| true` it aborts the whole
+    # install under `set -e`, silently skipping settings.json.
+    if [ "$found" = "1" ]; then
+        rmdir "${dir}/commands" 2>/dev/null || true
+    fi
+    return 0
+}
+
 # Remove BMAD-Ralph hook entries from a settings.json (requires jq)
 strip_br_hooks() {
     local settings="$1"
@@ -46,11 +68,16 @@ if [ "$1" == "--uninstall" ]; then
         INSTALL_DIR=".claude"
     fi
     echo -e "${YELLOW}Uninstalling BMAD-Ralph from ${INSTALL_DIR}...${NC}"
-    # br-*.md + br.md only: a bare br*.md glob would delete the user's own
-    # branch.md / browser.md commands.
-    for cmd in "${INSTALL_DIR}/commands"/br-*.md "${INSTALL_DIR}/commands/br.md"; do
-        [ -f "$cmd" ] && rm "$cmd" && echo -e "  ${RED}-${NC} $(basename "$cmd")"
+    # br-*/ + br/ only: a bare br* glob would delete the user's own
+    # branch/ or browser/ skill directory.
+    for skill in "${INSTALL_DIR}/skills"/br-*/ "${INSTALL_DIR}/skills/br/"; do
+        if [ -f "${skill}SKILL.md" ]; then
+            rm -r "${skill}" && echo -e "  ${RED}-${NC} skills/$(basename "$skill")"
+        fi
     done
+    rmdir "${INSTALL_DIR}/skills" 2>/dev/null || true
+    # Anything left from the pre-skills layout
+    remove_legacy_commands "$INSTALL_DIR" "commands/"
     for agent in "${INSTALL_DIR}/agents"/br-*.md; do
         [ -f "$agent" ] && rm "$agent" && echo -e "  ${RED}-${NC} $(basename "$agent")"
     done
@@ -112,18 +139,23 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Create directories
 echo -e "${YELLOW}Creating directories...${NC}"
-mkdir -p "${INSTALL_DIR}/commands"
+mkdir -p "${INSTALL_DIR}/skills"
 mkdir -p "${INSTALL_DIR}/agents"
 mkdir -p "${INSTALL_DIR}/hooks"
 
-# Copy commands
-echo -e "${YELLOW}Installing commands...${NC}"
-for cmd in "${SCRIPT_DIR}/.claude/commands"/br-*.md "${SCRIPT_DIR}/.claude/commands/br.md"; do
-    if [ -f "$cmd" ]; then
-        cp "$cmd" "${INSTALL_DIR}/commands/"
-        echo -e "  ${GREEN}+${NC} commands/$(basename "$cmd")"
-    fi
+# Copy skills
+echo -e "${YELLOW}Installing skills...${NC}"
+for skill in "${SCRIPT_DIR}/.claude/skills"/*/; do
+    [ -f "${skill}SKILL.md" ] || continue
+    name=$(basename "$skill")
+    mkdir -p "${INSTALL_DIR}/skills/${name}"
+    cp -R "${skill}." "${INSTALL_DIR}/skills/${name}/"
+    echo -e "  ${GREEN}+${NC} skills/${name}/"
 done
+
+# Upgrading from the pre-skills layout: drop the old command files so they
+# don't linger next to the skills that replaced them.
+remove_legacy_commands "$INSTALL_DIR" "commands/ (legacy) "
 
 # Copy agents
 echo -e "${YELLOW}Installing agents...${NC}"
@@ -208,14 +240,14 @@ else
 fi
 
 # Count installed files
-CMD_COUNT=$(ls -1 "${INSTALL_DIR}/commands"/br-*.md "${INSTALL_DIR}/commands/br.md" 2>/dev/null | wc -l)
+CMD_COUNT=$(ls -1d "${INSTALL_DIR}/skills"/br-*/ "${INSTALL_DIR}/skills/br/" 2>/dev/null | wc -l)
 AGENT_COUNT=$(ls -1 "${INSTALL_DIR}/agents"/br-*.md 2>/dev/null | wc -l)
 HOOK_COUNT=$(ls -1 "${INSTALL_DIR}/hooks"/br-guard.sh "${INSTALL_DIR}/hooks"/br-monitor.sh "${INSTALL_DIR}/hooks"/br-post-edit.sh 2>/dev/null | wc -l)
 
 echo ""
 echo -e "${GREEN}Installation complete!${NC}"
 echo ""
-echo -e "  Commands installed: ${CYAN}${CMD_COUNT}${NC}"
+echo -e "  Skills installed:   ${CYAN}${CMD_COUNT}${NC}"
 echo -e "  Agents installed:   ${CYAN}${AGENT_COUNT}${NC}"
 echo -e "  Hooks installed:    ${CYAN}${HOOK_COUNT}${NC} (+ br-lib.sh, sourced helper)"
 echo ""

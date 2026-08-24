@@ -22,14 +22,17 @@ spec is wrong, escalate, don't improvise.
 
 ## The protocol you follow
 
-The `br-ralph-protocol` skill is preloaded into your context: the loop (pre-flight, context,
-library currency, implement, verify, self-critique), the Quality Bar, the failure
-discipline, and the escalation format. **Follow it as written** — it is the same contract
-the orchestrator applies, and it is deliberately not restated here so the two can never
-drift apart.
+The `br-ralph-protocol` skill holds the loop (pre-flight, context, library currency,
+implement, verify, self-critique), the Quality Bar, the failure discipline and the
+escalation format. **Follow it as written** — it is the same contract the orchestrator
+applies, and it is deliberately not restated here so the two can never drift apart.
 
-If for any reason that content is not in your context, invoke the `br-ralph-protocol` skill
-before touching code. Do not improvise a loop from memory.
+**First action, before anything else: make sure it is actually in your context.** Your
+`skills:` frontmatter asks for it to be preloaded, but a stale session, an older Claude
+Code, or a plugin-scoped install can all leave that promise unkept. Look for a section
+titled "The Ralph Protocol". If you cannot see it, invoke the `br-ralph-protocol` skill
+now. Never improvise the loop from memory: a half-remembered contract is exactly how the
+commit format and the failure count drift apart.
 
 ## Before anything else
 

@@ -311,32 +311,34 @@ INIT → DISCOVER → PLAN → ARCHITECT → SPRINT_PREP → EXECUTE → REVIEW 
 
 ```
 .claude/
-├── commands/          ← 22 slash commands
-│   ├── br.md              Orchestrateur principal
-│   ├── br-init.md         Initialisation
-│   ├── br-discover.md     Phase decouverte
-│   ├── br-plan.md         Phase PRD
-│   ├── br-architect.md    Phase architecture
-│   ├── br-sprint.md       Phase stories
-│   ├── br-build.md        Execution Ralph
-│   ├── br-review.md       Quality gate
-│   ├── br-auto.md         Pipeline automatique
-│   ├── br-resume.md       Reprise intelligente
-│   ├── br-status.md       Dashboard
-│   ├── br-debug.md        Diagnostic
-│   ├── br-fix.md          Auto-reparation
-│   ├── br-logs.md         Viewer de logs
-│   ├── br-rollback.md     Rollback stories/sprints
-│   ├── br-config.md       Configuration (model, limites)
-│   ├── br-update.md       Mise a jour du skill
-│   ├── br-test.md         Lanceur de tests
-│   ├── br-metrics.md      Analytics de performance
-│   ├── br-scope.md        Gestion du scope
-│   ├── br-deploy.md       Artefacts de deploiement
-│   └── br-mcp.md          Installation des serveurs MCP
+├── skills/            ← 22 slash commands + 1 skill interne
+│   ├── br/SKILL.md                Orchestrateur principal
+│   ├── br-init/SKILL.md           Initialisation
+│   ├── br-discover/SKILL.md       Phase decouverte
+│   ├── br-plan/SKILL.md           Phase PRD
+│   ├── br-architect/SKILL.md      Phase architecture
+│   ├── br-sprint/SKILL.md         Phase stories
+│   ├── br-build/SKILL.md          Execution Ralph
+│   ├── br-review/SKILL.md         Quality gate
+│   ├── br-auto/SKILL.md           Pipeline automatique
+│   ├── br-resume/SKILL.md         Reprise intelligente
+│   ├── br-status/SKILL.md         Dashboard
+│   ├── br-debug/SKILL.md          Diagnostic
+│   ├── br-fix/SKILL.md            Auto-reparation
+│   ├── br-logs/SKILL.md           Viewer de logs
+│   ├── br-rollback/SKILL.md       Rollback stories/sprints
+│   ├── br-config/SKILL.md         Configuration (model, limites)
+│   ├── br-update/SKILL.md         Mise a jour du skill
+│   ├── br-test/SKILL.md           Lanceur de tests
+│   ├── br-metrics/SKILL.md        Analytics de performance
+│   ├── br-scope/SKILL.md          Gestion du scope
+│   ├── br-deploy/SKILL.md         Artefacts de deploiement
+│   ├── br-mcp/SKILL.md            Installation des serveurs MCP
+│   └── br-ralph-protocol/SKILL.md Le protocole Ralph — source unique,
+│                                  non invocable (user-invocable: false)
 ├── agents/            ← 2 agents specialises
 │   ├── br-developer.md    Agent dev autonome (sonnet, bypassPermissions)
-│   └── br-qa.md           Agent QA read-only (sonnet, bypassPermissions)
+│   └── br-qa.md           Agent QA (sonnet, ecrit seulement son rapport)
 ├── hooks/             ← 3 hooks + 1 lib
 │   ├── br-guard.sh        Protection fichiers sensibles + commandes dangereuses
 │   ├── br-monitor.sh      Log automatique de toute activite
@@ -373,6 +375,26 @@ INIT → DISCOVER → PLAN → ARCHITECT → SPRINT_PREP → EXECUTE → REVIEW 
     ├── review-performance-sprint-1.md
     └── review-architecture-sprint-1.md
 ```
+
+---
+
+## Le protocole Ralph vit a un seul endroit
+
+Les regles d'une story — boucle, verification, quality bar, comptage des echecs,
+escalade, convention de commit — sont dans `.claude/skills/br-ralph-protocol/SKILL.md`,
+et nulle part ailleurs. L'agent `br-developer` le precharge via `skills:` dans son
+frontmatter ; `/br-build`, `/br-resume` et `/br-fix` le chargent par son nom. Aucun
+chemin n'est code en dur : c'est ce qui permet a la meme regle de s'appliquer en
+installation projet comme en installation globale.
+
+Si tu modifies une regle de la boucle, tu la modifies la — et `bash tests/run-structure-tests.sh`
+verifie qu'aucune copie n'est reapparue ailleurs.
+
+### Attention : global masque projet
+
+Pour les skills, `~/.claude/` **ecrase** `.claude/` (l'inverse de ce qu'on attend).
+Si tu as installe BMAD-Ralph globalement ET dans le projet, c'est la version globale
+qui tourne, et editer la copie projet ne fait rien. `/br-config` te le signale.
 
 ---
 

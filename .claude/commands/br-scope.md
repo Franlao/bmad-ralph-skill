@@ -1,6 +1,8 @@
 ---
 name: br-scope
 description: "Change project scope — add/remove features, regenerate affected sprints"
+argument-hint: '[list | add "<feature>" | remove "<feature|STORY-X.Y>"]'
+model: opus
 ---
 
 # BMAD-Ralph Scope Management

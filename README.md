@@ -81,6 +81,9 @@ INIT → DISCOVER → PLAN → ARCHITECT → SPRINT_PREP → EXECUTE → REVIEW 
 - Detecte automatiquement le tech stack (package.json, Cargo.toml, etc.)
 - Analyse le codebase existant
 - Cree le dossier `.bmad-ralph/` et le fichier d'etat
+- Redige `docs/brief.md` a partir de ta description, chaque ligne tagguee
+  `[FACT]` / `[ASSUMPTION]` / `[UNKNOWN]` — les `[UNKNOWN]` deviennent les
+  questions de recherche de `/br-discover`
 
 #### 2. DISCOVER (`/br-discover`)
 - Lance **4 agents en parallele** :
@@ -191,7 +194,7 @@ INIT → DISCOVER → PLAN → ARCHITECT → SPRINT_PREP → EXECUTE → REVIEW 
 | Commande | Description | Quand l'utiliser |
 |----------|-------------|------------------|
 | `/br-build` | Sprint courant uniquement | Tu veux avancer sprint par sprint et reviewer entre chaque. |
-| `/br-build auto` | Tous les sprints a la suite | **Tu pars et tu laisses tourner.** Ralph enchaine tous les sprints avec review automatique entre chaque. |
+| `/br-build auto` | Tous les sprints a la suite | **Tu pars et tu laisses tourner.** Ralph enchaine tous les sprints, lance lui-meme la quality gate entre chaque, et s'arrete des qu'une gate n'est pas un PASS franc. |
 | `/br-build parallel` | Stories parallelisees avec subagents | Projets avec beaucoup de stories independantes. Plus rapide mais plus gourmand en tokens. |
 | `/br-build story STORY-2.3` | Une story specifique | Tu veux relancer ou tester une seule story. |
 
@@ -309,7 +312,7 @@ INIT → DISCOVER → PLAN → ARCHITECT → SPRINT_PREP → EXECUTE → REVIEW 
 
 ```
 .claude/
-├── commands/          ← 21 slash commands
+├── commands/          ← 22 slash commands
 │   ├── br.md              Orchestrateur principal
 │   ├── br-init.md         Initialisation
 │   ├── br-discover.md     Phase decouverte
@@ -330,15 +333,16 @@ INIT → DISCOVER → PLAN → ARCHITECT → SPRINT_PREP → EXECUTE → REVIEW 
 │   ├── br-test.md         Lanceur de tests
 │   ├── br-metrics.md      Analytics de performance
 │   ├── br-scope.md        Gestion du scope
-│   └── br-deploy.md       Artefacts de deploiement
+│   ├── br-deploy.md       Artefacts de deploiement
+│   └── br-mcp.md          Installation des serveurs MCP
 ├── agents/            ← 2 agents specialises
 │   ├── br-developer.md    Agent dev autonome (sonnet, bypassPermissions)
 │   └── br-qa.md           Agent QA read-only (sonnet, bypassPermissions)
-├── hooks/             ← 4 hooks
+├── hooks/             ← 3 hooks + 1 lib
 │   ├── br-guard.sh        Protection fichiers sensibles + commandes dangereuses
 │   ├── br-monitor.sh      Log automatique de toute activite
 │   ├── br-post-edit.sh    Auto-format apres chaque edit
-│   └── br-lib.sh          Helpers partages (parsing JSON du payload hook)
+│   └── br-lib.sh          Helpers partages (fichier source, pas un hook)
 ├── templates/
 │   └── CLAUDE.md          Conventions BMAD-Ralph pour le projet
 └── settings.json      ← Configuration des hooks (guard + monitor + auto-format)
@@ -350,6 +354,7 @@ INIT → DISCOVER → PLAN → ARCHITECT → SPRINT_PREP → EXECUTE → REVIEW 
 .bmad-ralph/
 ├── state.json              ← Etat du projet (phase, sprint, metriques)
 ├── docs/
+│   ├── brief.md                Brief projet (rempli par br-init, pas un template vide)
 │   ├── business-brief.md       Synthese de la decouverte
 │   ├── prd.md                  Product Requirements Document
 │   ├── architecture.md         Architecture systeme
@@ -385,10 +390,19 @@ Si une story echoue **3 fois de suite** (seuil configurable via `/br-config circ
 
 ### Hook de protection (`br-guard.sh`)
 Bloque automatiquement (via le protocole `permissionDecision: deny` des hooks Claude Code) :
-- Modification de fichiers `.env`, `.key`, `.pem`, `credentials`
-- Commandes dangereuses : `rm -rf` sur cibles larges (`/`, `~`, `.`, `*`), `DROP TABLE`, `git push --force` (mais `--force-with-lease` reste autorise), `git reset --hard`, `git clean -f`, `curl | sh`, ...
+- Modification de fichiers de secrets : `.env` (sauf `.env.example` et consorts), `*.key`,
+  `*.pem`, `id_rsa*`, `credentials.json`, `secrets.yml`... Le matching se fait sur le **nom
+  du fichier**, pas sur le chemin : `src/config/secrets.ts` reste editable, sinon Ralph
+  echouerait en boucle sur une story qu'il ne peut pas reparer.
+- Ecritures shell vers ces memes fichiers (`> .env`, `tee`, `sed -i`, `cp`) — la regle
+  fichier ne voit que les outils Edit/Write.
+- Commandes dangereuses : `rm -rf` sur cibles larges (`/`, `~`, `.`, `./`, `*`), `DROP TABLE`,
+  `git push --force` (mais `--force-with-lease` reste autorise), `git reset --hard`,
+  `git clean -f`, `curl | sh`, ... Les commandes de lecture (`grep`, `git log`, `cat`) ne
+  declenchent pas la blocklist, sauf si elles enchainent autre chose.
 
 C'est une blocklist best-effort — un filet de securite, pas un sandbox.
+Les regles sont couvertes par des tests : `bash tests/run-guard-tests.sh`.
 
 ### Hook de monitoring (`br-monitor.sh`)
 Enregistre automatiquement dans `monitor.log` :
@@ -415,8 +429,9 @@ fort, execution sur un modele econome :
 
 | Phase | Modele par defaut | Pourquoi |
 |-------|-------------------|----------|
-| discover / plan / architect / sprint / review / auto | `opus` | Synthese, arbitrages, redaction de specs — la qualite ici conditionne tout le reste |
-| build (boucle Ralph) + agents dev/qa | `sonnet` | Implementation guidee par des specs detaillees — volume eleve de tokens, taches cadrees |
+| discover / plan / architect / sprint / review / auto / scope | `opus` | Synthese, arbitrages, redaction de specs — la qualite ici conditionne tout le reste |
+| build (boucle Ralph) / resume / fix / test + agents dev/qa | `sonnet` | Implementation guidee par des specs detaillees — volume eleve de tokens, taches cadrees |
+| status / logs / metrics / debug / rollback / deploy / mcp / update / init / br | aucun | Elles lisent l'etat et affichent : elles tournent sur le modele de ta session |
 
 Changer un role : `/br-config model architect fable` · tout changer :
 `/br-config model opus` · revenir au modele de la session : `/br-config model dev inherit`
@@ -425,9 +440,13 @@ sur les autres phases de reflexion, sonnet sur l'execution — necessite l'acces
 au tier Fable/Mythos)
 
 Les sous-agents lances par une phase (chercheurs du discover, panel d'experts
-de l'architecte) heritent du modele de leur phase. Attention : la disponibilite
-d'opus/fable depend de ton abonnement — en cas d'erreur "model not available",
-rabats le role concerne sur `sonnet`.
+de l'architecte) sont censes heriter du modele de leur phase, mais la doc Claude
+Code ne precise pas sur quoi retombe `inherit` dans un tour ou le modele a ete
+surcharge : verifie-le avec les tags `[model:]` du monitor
+(`grep -o '\[model:[^]]*\]' .bmad-ralph/logs/monitor.log | sort | uniq -c`)
+plutot que de le supposer. Attention aussi : la disponibilite d'opus/fable depend
+de ton abonnement — en cas d'erreur "model not available", rabats le role
+concerne sur `sonnet`.
 
 ---
 

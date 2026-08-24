@@ -1,6 +1,7 @@
 ---
 name: br-config
 description: "Configure BMAD-Ralph settings — model, iterations, circuit breaker, and more"
+argument-hint: '[model <role> <model> | circuit-breaker N | max-iterations N | guard add "<pattern>" | reset]'
 ---
 
 # BMAD-Ralph Configuration
@@ -20,6 +21,18 @@ View and modify BMAD-Ralph settings without editing files manually.
 - `$ARGUMENTS` = `guard list` → show protected patterns
 - `$ARGUMENTS` = `reset` → reset all settings to defaults
 
+## Step 0 — Locate the install root (do this BEFORE any edit)
+
+BMAD-Ralph installs either into the project (`.claude/`) or globally
+(`~/.claude/`). Every path below is relative to the install root, so resolve it
+first — editing `.claude/commands/…` from a global install silently writes to a
+directory that doesn't exist, or creates a shadow copy that never runs:
+
+1. `.claude/commands/br-config.md` exists → `ROOT=.claude` (project install)
+2. else `~/.claude/commands/br-config.md` exists → `ROOT=~/.claude` (global install)
+3. both exist → ask the user which one to change (project shadows global)
+4. neither → tell the user to re-run `install.sh`
+
 ## Model Matrix — which model runs what
 
 Every role's model lives in a frontmatter `model:` field. Reasoning-heavy
@@ -28,18 +41,31 @@ implementation is spec-following, not open-ended design):
 
 | Role | File whose frontmatter to edit | Default |
 |------|-------------------------------|---------|
-| `discover` | `.claude/commands/br-discover.md` | opus |
-| `plan` | `.claude/commands/br-plan.md` | opus |
-| `architect` | `.claude/commands/br-architect.md` | opus |
-| `sprint` | `.claude/commands/br-sprint.md` | opus |
-| `review` | `.claude/commands/br-review.md` | opus |
-| `auto` | `.claude/commands/br-auto.md` | opus |
-| `build` | `.claude/commands/br-build.md` | sonnet |
-| `dev` | `.claude/agents/br-developer.md` | sonnet |
-| `qa` | `.claude/agents/br-qa.md` | sonnet |
+| `discover` | `$ROOT/commands/br-discover.md` | opus |
+| `plan` | `$ROOT/commands/br-plan.md` | opus |
+| `architect` | `$ROOT/commands/br-architect.md` | opus |
+| `sprint` | `$ROOT/commands/br-sprint.md` | opus |
+| `review` | `$ROOT/commands/br-review.md` | opus |
+| `auto` | `$ROOT/commands/br-auto.md` | opus |
+| `scope` | `$ROOT/commands/br-scope.md` | opus |
+| `build` | `$ROOT/commands/br-build.md` | sonnet |
+| `resume` | `$ROOT/commands/br-resume.md` | sonnet |
+| `fix` | `$ROOT/commands/br-fix.md` | sonnet |
+| `test` | `$ROOT/commands/br-test.md` | sonnet |
+| `dev` | `$ROOT/agents/br-developer.md` | sonnet |
+| `qa` | `$ROOT/agents/br-qa.md` | sonnet |
+
+The remaining commands (`br`, `br-init`, `br-status`, `br-logs`, `br-metrics`,
+`br-debug`, `br-rollback`, `br-deploy`, `br-mcp`, `br-update`, `br-config`)
+declare **no** `model:` on purpose: they read state and print, so they run on
+whatever model the session is using. They are not roles — `/br-config model …`
+does not target them.
 
 Subagents launched inline by a phase (discovery researchers, the architect's
-expert panel) inherit that phase's model automatically.
+expert panel) are expected to inherit that phase's model, but Claude Code does
+not document what `inherit` resolves to inside a turn that overrode the model.
+Treat it as unverified and check it with the `[model:]` tags below rather than
+assuming it.
 
 ## Model Profiles
 
@@ -50,8 +76,8 @@ Applies in one shot:
 | Roles | Model | Rationale |
 |-------|-------|-----------|
 | `architect`, `review` | `fable` | The two highest-leverage judgment points: a design error costs whole sprints; the quality gate is the last line of defense |
-| `discover`, `plan`, `sprint`, `auto` | `opus` | Thinking-heavy, but the fable premium pays less here |
-| `build`, `dev`, `qa` | `sonnet` | Spec-following execution — stories are deliberately written to be implementable by an economical model |
+| `discover`, `plan`, `sprint`, `auto`, `scope` | `opus` | Thinking-heavy, but the fable premium pays less here |
+| `build`, `resume`, `fix`, `test`, `dev`, `qa` | `sonnet` | Spec-following execution — stories are deliberately written to be implementable by an economical model |
 
 Procedure:
 1. Edit each file's `model:` frontmatter per the table above
@@ -75,18 +101,20 @@ BMAD-RALPH CONFIGURATION
 ═══════════════════════════════════════════
 
   Models
-    discover/plan/architect/sprint/review:  opus
-    build (Ralph loop):                     sonnet
-    dev agent / qa agent:                   sonnet
+    discover/plan/architect/sprint/review/auto/scope:  opus
+    build/resume/fix/test:                            sonnet
+    dev agent / qa agent:                             sonnet
+    (other commands: no override — session model)
 
   Max iterations/story:   5
   Max iterations/sprint:  40
   Circuit breaker:        3 failures
 
-  Guard protected patterns:
-    *.env, *.env.local, *.env.production, *.env.staging
-    *.key, *.pem, *.cert, *.p12, *.pfx
-    *credentials*, *secret*
+  Guard protected patterns (matched on the BASENAME, not the path):
+    .env, .env.*, *.env   — except *.example/*.sample/*.template/*.dist
+    *.key, *.pem, *.crt, *.cert, *.p12, *.pfx, *.keystore, id_rsa*
+    credential*, secret*  — only outside source extensions,
+                            so src/config/secrets.ts stays editable
 
   Auto-format hook:       enabled
   Monitor hook:           enabled
@@ -152,13 +180,13 @@ When `$ARGUMENTS` = `max-iterations <N>` or `max-sprint-iterations <N>` or `circ
 
 When `$ARGUMENTS` = `guard add "<pattern>"`:
 
-1. Read `.claude/hooks/br-guard.sh`
+1. Read `$ROOT/hooks/br-guard.sh`
 2. Add the pattern to the `is_protected()` function
 3. Display confirmation
 
 When `$ARGUMENTS` = `guard list`:
 
-1. Read `.claude/hooks/br-guard.sh`
+1. Read `$ROOT/hooks/br-guard.sh`
 2. Parse the `is_protected()` function patterns
 3. Display them as a list
 
@@ -170,6 +198,6 @@ When `$ARGUMENTS` = `reset`:
    - `ralph.max_iterations_per_story` = 5
    - `ralph.max_iterations_per_sprint` = 40
    - `ralph.circuit_breaker_threshold` = 3
-2. Reset models to the Model Matrix defaults (opus for planning phases,
-   sonnet for build/dev/qa)
+2. Reset models to the Model Matrix defaults (opus for the planning/judgment
+   phases, sonnet for execution, no override anywhere else)
 3. Display: "All settings reset to defaults."

@@ -1,6 +1,8 @@
 ---
 name: br-rollback
 description: "Rollback a sprint or story — git revert + state update, safe and traceable"
+argument-hint: "[last | story STORY-X.Y | sprint N]"
+disable-model-invocation: true
 ---
 
 # BMAD-Ralph Rollback

@@ -1,6 +1,7 @@
 ---
 name: br-debug
 description: "Diagnose BMAD-Ralph issues — find what went wrong, where, and why"
+argument-hint: "[all | sprint | phase | story STORY-X.Y]"
 ---
 
 # BMAD-Ralph Debug & Diagnostic Tool

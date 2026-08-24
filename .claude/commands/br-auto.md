@@ -1,6 +1,7 @@
 ---
 name: br-auto
 description: "Run all BMAD planning phases automatically, then pause before Ralph execution"
+argument-hint: "[description du projet si pas encore initialise]"
 model: opus
 ---
 

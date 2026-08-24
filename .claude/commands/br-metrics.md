@@ -1,6 +1,7 @@
 ---
 name: br-metrics
 description: "Ralph performance analytics — success rate, iterations, cost estimate"
+argument-hint: "[cost | velocity | errors]"
 ---
 
 # BMAD-Ralph Metrics & Analytics

@@ -1,6 +1,7 @@
 ---
 name: br-build
 description: "Ralph Wiggum Execution — Autonomous implementation loop with circuit breakers"
+argument-hint: "[auto | parallel | story STORY-X.Y]"
 model: sonnet
 ---
 
@@ -46,6 +47,12 @@ If `$ARGUMENTS` contains:
 
 ## Phase 2: Execute Stories (The Ralph Loop)
 
+**You orchestrate, `br-developer` implements.** One story = one `br-developer` invocation,
+in every mode — sequential included. Implementing inline would run the story without the
+agent's protocol (library-currency lookups, quality bar, self-critique on its own diff),
+and that protocol is the whole reason the agent exists. `parallel` mode is the same loop
+with N agents at once plus worktree isolation.
+
 For EACH story in order:
 
 ### Step A — Pre-flight Check
@@ -55,33 +62,36 @@ Check: are all dependency stories committed? (check git log)
 If dependencies not met → skip, will retry later
 ```
 
-### Step B — Implement
+### Step B — Delegate the implementation
+
 ```
-Follow the Implementation Instructions step by step.
-Create/modify the exact files listed.
-Follow the architecture document for patterns and conventions.
-
-Library APIs: your memory is stale by definition. Read the exact installed
-version from the lockfile, then look up the docs FOR THAT VERSION before
-using any API you're not 100% certain of — context7 MCP if available, else
-WebFetch on official docs, else the library's own types/source in
-node_modules (ground truth). Framework routers, ORM syntax, and config
-formats are the classic silent breakers between majors.
-
-Before writing any helper: Grep the codebase for an existing one.
+Agent({
+  subagent_type: "br-developer",
+  prompt: "<sprint file path> + STORY-X.Y + <architecture doc path>
+           + the current attempt number and ralph.circuit_breaker_threshold from state.json
+           + on a retry: the previous attempt's exact error output"
+})
 ```
 
-### Step C — Verify
-```
-1. Run the Verification Command from the story.
-2. Run lint and typecheck (detect commands from package.json scripts or project config).
-   Fix any errors before moving on — do not skip or suppress.
-```
+Never `general-purpose`: it lacks the Ralph protocol and would prompt for permissions.
+The agent implements, runs the story's Verification Command, runs lint and typecheck,
+reads its own diff against the Quality Bar, and returns **PASS** (with what it changed)
+or **FAIL** (with the exact error) or **ESCALATE** (with root cause + recommendation).
+
+### Step C — Read the verdict
+
+Take the agent's verdict as a report, not as truth: before committing a PASS, re-run the
+story's Verification Command yourself. A verdict that does not survive one re-run is a
+FAIL, and it is the cheapest bug you will ever catch.
 
 ### Step D — Evaluate Result
 
 **If verification PASSES:**
-1. **Self-critique before committing** — read your own `git diff` as if reviewing a stranger's PR, against the br-developer Quality Bar: boundaries handled (null/empty/error, input validation)? no N+1, no unbounded fetch-all, no `await`-in-loop on independent calls? resources closed? nothing clever without a requirement? Then ask: Did I implement ALL acceptance criteria? Did I respect the architecture? Did I only touch the files listed in the story (or have a clear reason for any extra files)? If the story has a perf criterion, did I MEASURE it?
+1. **Check the diff before committing** — the agent self-critiqued, you check what it
+   actually did: does `git diff` touch only the files the story listed (any extra file
+   needs a stated reason)? Are all acceptance criteria covered, not just some? If the
+   story has a perf criterion, did the agent report a MEASURED number? Anything unclear
+   goes back to Step B as a FAIL, not into a commit.
 2. Git commit: `git add <files> && git commit -m "feat(sprint-<N>): STORY-<N.M> <title>"`
 3. Log success to `.bmad-ralph/logs/sprint-<N>.log`:
    ```
@@ -94,8 +104,8 @@ Before writing any helper: Grep the codebase for an existing one.
 5. Move to next story
 
 **If verification FAILS:**
-1. **Step back — reason before touching code:**
-   - Is the root cause in the code I just wrote?
+1. **Step back — reason before re-delegating** (the agent already tried the obvious fix):
+   - Is the root cause in the code the agent just wrote?
    - Is it a missing dependency, a wrong import, or a type mismatch?
    - Did I miss reading a file that defines something I'm using?
    - Is this an environment issue (missing env var, missing package) vs a code issue?

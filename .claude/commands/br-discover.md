@@ -48,7 +48,9 @@ someone's internal CLI wastes tokens and produces fiction.
 
 ### Agent 1: Market & Problem Analysis
 ```
-Analyze the project described in .bmad-ralph/state.json and .bmad-ralph/docs/brief-template.md.
+Analyze the project described in .bmad-ralph/state.json and .bmad-ralph/docs/brief.md.
+The brief is tagged: treat every [UNKNOWN] line as a research question to answer here,
+and never treat an [ASSUMPTION] as established.
 Research (use WebSearch — do not answer from memory):
 - What problem does this solve?
 - Who are the target users? Create 2-3 user personas grounded in what you found.

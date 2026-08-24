@@ -46,7 +46,9 @@ if [ "$1" == "--uninstall" ]; then
         INSTALL_DIR=".claude"
     fi
     echo -e "${YELLOW}Uninstalling BMAD-Ralph from ${INSTALL_DIR}...${NC}"
-    for cmd in "${INSTALL_DIR}/commands"/br*.md; do
+    # br-*.md + br.md only: a bare br*.md glob would delete the user's own
+    # branch.md / browser.md commands.
+    for cmd in "${INSTALL_DIR}/commands"/br-*.md "${INSTALL_DIR}/commands/br.md"; do
         [ -f "$cmd" ] && rm "$cmd" && echo -e "  ${RED}-${NC} $(basename "$cmd")"
     done
     for agent in "${INSTALL_DIR}/agents"/br-*.md; do
@@ -64,15 +66,17 @@ if [ "$1" == "--uninstall" ]; then
     done
     rmdir "${INSTALL_DIR}/templates" 2>/dev/null || true
     # Clean br-* hook entries out of settings.json when jq is available
-    if [ -f "${INSTALL_DIR}/settings.json" ]; then
-        if command -v jq >/dev/null 2>&1 && grep -q 'br-guard.sh' "${INSTALL_DIR}/settings.json"; then
-            strip_br_hooks "${INSTALL_DIR}/settings.json" > "${INSTALL_DIR}/settings.json.tmp" \
-                && mv "${INSTALL_DIR}/settings.json.tmp" "${INSTALL_DIR}/settings.json"
-            echo -e "  ${RED}-${NC} br-* hook entries removed from settings.json"
+    for settings_file in settings.json settings.local.json; do
+        target="${INSTALL_DIR}/${settings_file}"
+        [ -f "$target" ] || continue
+        grep -q 'br-guard.sh' "$target" || continue
+        if command -v jq >/dev/null 2>&1; then
+            strip_br_hooks "$target" > "${target}.tmp" && mv "${target}.tmp" "$target"
+            echo -e "  ${RED}-${NC} br-* hook entries removed from ${settings_file}"
         else
-            echo -e "${YELLOW}Note: remove br-* hook entries from settings.json manually (jq not found).${NC}"
+            echo -e "${YELLOW}Note: remove br-* hook entries from ${settings_file} manually (jq not found).${NC}"
         fi
-    fi
+    done
     echo -e "${YELLOW}Note: .bmad-ralph/ project data was NOT removed. Delete it manually if needed.${NC}"
     echo -e "${GREEN}BMAD-Ralph uninstalled.${NC}"
     exit 0
@@ -114,7 +118,7 @@ mkdir -p "${INSTALL_DIR}/hooks"
 
 # Copy commands
 echo -e "${YELLOW}Installing commands...${NC}"
-for cmd in "${SCRIPT_DIR}/.claude/commands"/br*.md; do
+for cmd in "${SCRIPT_DIR}/.claude/commands"/br-*.md "${SCRIPT_DIR}/.claude/commands/br.md"; do
     if [ -f "$cmd" ]; then
         cp "$cmd" "${INSTALL_DIR}/commands/"
         echo -e "  ${GREEN}+${NC} commands/$(basename "$cmd")"
@@ -204,16 +208,16 @@ else
 fi
 
 # Count installed files
-CMD_COUNT=$(ls -1 "${INSTALL_DIR}/commands"/br*.md 2>/dev/null | wc -l)
+CMD_COUNT=$(ls -1 "${INSTALL_DIR}/commands"/br-*.md "${INSTALL_DIR}/commands/br.md" 2>/dev/null | wc -l)
 AGENT_COUNT=$(ls -1 "${INSTALL_DIR}/agents"/br-*.md 2>/dev/null | wc -l)
-HOOK_COUNT=$(ls -1 "${INSTALL_DIR}/hooks"/br-*.sh 2>/dev/null | wc -l)
+HOOK_COUNT=$(ls -1 "${INSTALL_DIR}/hooks"/br-guard.sh "${INSTALL_DIR}/hooks"/br-monitor.sh "${INSTALL_DIR}/hooks"/br-post-edit.sh 2>/dev/null | wc -l)
 
 echo ""
 echo -e "${GREEN}Installation complete!${NC}"
 echo ""
 echo -e "  Commands installed: ${CYAN}${CMD_COUNT}${NC}"
 echo -e "  Agents installed:   ${CYAN}${AGENT_COUNT}${NC}"
-echo -e "  Hooks installed:    ${CYAN}${HOOK_COUNT}${NC}"
+echo -e "  Hooks installed:    ${CYAN}${HOOK_COUNT}${NC} (+ br-lib.sh, sourced helper)"
 echo ""
 echo -e "${CYAN}Available commands:${NC}"
 echo ""

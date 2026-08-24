@@ -47,11 +47,16 @@ If `$ARGUMENTS` contains:
 
 ## Phase 2: Execute Stories (The Ralph Loop)
 
+**The loop itself is defined once, in the `br-ralph-protocol` skill** — pre-flight, context
+gathering, library currency, implementation, verification, self-critique, the Quality Bar,
+failure counting and escalation. Load it (Skill tool) before starting the loop, and apply
+it as written. It is deliberately not restated here: a second copy is a copy that drifts.
+What follows is only what the ORCHESTRATOR does around it.
+
 **You orchestrate, `br-developer` implements.** One story = one `br-developer` invocation,
-in every mode — sequential included. Implementing inline would run the story without the
-agent's protocol (library-currency lookups, quality bar, self-critique on its own diff),
-and that protocol is the whole reason the agent exists. `parallel` mode is the same loop
-with N agents at once plus worktree isolation.
+in every mode — sequential included. The agent preloads the same protocol skill, so
+delegating is what makes it apply. `parallel` mode is this same loop with N agents at once
+plus worktree isolation.
 
 For EACH story in order:
 
@@ -114,14 +119,10 @@ FAIL, and it is the cheapest bug you will ever catch.
    ```
    [<timestamp>] STORY-<N.M> ✗ FAIL (iteration <i>): <error summary>
    ```
-4. **Circuit Breaker Check (state file is the source of truth, NOT memory):**
-   - Read `ralph.current_story`, `ralph.current_attempt`, and `ralph.circuit_breaker_threshold` from `.bmad-ralph/state.json` — the threshold is configurable via `/br-config circuit-breaker <N>`, never hardcode it
-   - If `ralph.current_story` ≠ this story ID → set it to this story and set `ralph.current_attempt` to 0
-   - Increment `ralph.current_attempt` and write it back to the state file
-   - Never count failures from conversation memory — after context compaction the count would be lost; the state file survives
-   - If `ralph.current_attempt` < `circuit_breaker_threshold` → fix the root cause (not a patch), retry from Step B
-   - If `ralph.current_attempt` ≥ `circuit_breaker_threshold` → **ESCALATE** (see Escalation Protocol), then reset `ralph.current_attempt` to 0
-   - Hard cap: if total attempts on this story reach `ralph.max_iterations_per_story`, escalate regardless (this cap only matters when the user raises the circuit breaker above it)
+4. **Circuit breaker**: apply "Counting failures" from `br-ralph-protocol` — the state file
+   decides, not your memory of this conversation. Under the threshold, retry from Step B
+   with the exact error in the delegation prompt; at or over it, follow the protocol's
+   Escalation section and move to the next story.
 
 ### Step E — Between Stories
 After each story (pass or fail), update the state file:
@@ -177,48 +178,14 @@ After Phase 3 has set `phase` to `REVIEW`:
 
 At the end of the loop, report per sprint: stories completed, escalations, gate score.
 
-## Escalation Protocol
-
-When a story fails `circuit_breaker_threshold` times (circuit breaker triggered):
-
-1. Write detailed error analysis to `.bmad-ralph/logs/escalation-STORY-<N.M>.md`:
-   ```markdown
-   # Escalation: STORY-<N.M>
-
-   ## Story Description
-   <from sprint file>
-
-   ## Attempt 1
-   - Action taken: <what was implemented>
-   - Error: <exact error output>
-
-   ## Attempt 2
-   - Action taken: <what was changed>
-   - Error: <exact error output>
-
-   ## Attempt 3
-   - Action taken: <what was changed>
-   - Error: <exact error output>
-
-   ## Root Cause Analysis
-   <analysis of why this keeps failing>
-
-   ## Recommendation
-   <what needs to change in the architecture or story to make this work>
-   ```
-
-2. Update state: increment `metrics.escalations_to_architect`
-
-3. **DO NOT** keep retrying. Move to the next story.
-
 ## Parallel Execution Mode
 
 When `$ARGUMENTS` contains `parallel`:
 
 1. Read the sprint file for stories with the same `Parallel Group`
 2. Launch one **subagent per parallel group** simultaneously — always use the
-   `br-developer` agent (it carries the Ralph protocol, quality rules, and
-   `permissionMode: bypassPermissions` in its definition), with worktree isolation:
+   `br-developer` agent (it preloads `br-ralph-protocol` and declares
+   `permissionMode: bypassPermissions`), with worktree isolation:
    ```
    Agent({
      subagent_type: "br-developer",
@@ -250,7 +217,7 @@ Agent tool has no `mode`/`bypassPermissions` argument. `br-developer` declares
 `permissionMode: bypassPermissions` in its frontmatter, so any work delegated to
 it runs without user prompts. Always delegate implementation work to
 `br-developer` (never `general-purpose`, which would prompt for permissions and
-lacks the Ralph protocol).
+does not preload `br-ralph-protocol`).
 
 The guard hook (`br-guard.sh`) is a best-effort safety net that blocks common
 destructive operations (recursive deletes on broad targets, force pushes, hard
@@ -259,11 +226,9 @@ as the last line of defense, not a license to run anything.
 
 ## Safety Guardrails
 
-All limits come from `state.json` (`ralph.*`) — they are user-configurable via `/br-config`, so read them, never assume the defaults:
+All limits come from `state.json` (`ralph.*`) — they are user-configurable via `/br-config`, so read them, never assume the defaults. The per-story limits (`circuit_breaker_threshold`, `max_iterations_per_story`) and how to count against them belong to `br-ralph-protocol`. What is yours, at the sprint level:
 
-1. **Circuit breaker** (`circuit_breaker_threshold`, default 3): consecutive failures on the same story → escalate. This is the limit that normally fires.
-2. **Max iterations per story** (`max_iterations_per_story`, default 5): hard cap on implement+verify cycles for one story — a backstop in case the circuit breaker is configured above it.
-3. **Max total iterations per sprint** (`max_iterations_per_sprint`, default 40): if reached, pause and report to user.
-4. **Never modify**: `.bmad-ralph/state.json` structure (only update values), `.env` files, migration files unless explicitly in story
-5. **Always commit**: after each successful story — this is your checkpoint
-6. **Log everything**: every action, every error, every decision goes to the sprint log
+1. **Max total iterations per sprint** (`max_iterations_per_sprint`, default 40): if reached, pause and report to user.
+2. **Never modify**: `.bmad-ralph/state.json` structure (only update values), `.env` files, migration files unless explicitly in story
+3. **Always commit**: after each successful story — this is your checkpoint
+4. **Log everything**: every action, every error, every decision goes to the sprint log

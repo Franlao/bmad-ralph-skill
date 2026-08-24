@@ -13,7 +13,7 @@ Initialize a new BMAD-Ralph project for: **$ARGUMENTS**
 Create the following directories and files:
 
 ```bash
-mkdir -p .bmad-ralph/{docs,sprints,prompts,logs}
+mkdir -p .bmad-ralph/{docs,sprints,logs}
 ```
 
 ## Step 1b: Create .gitignore for BMAD logs

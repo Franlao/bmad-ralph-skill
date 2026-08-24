@@ -23,15 +23,17 @@ View and modify BMAD-Ralph settings without editing files manually.
 
 ## Step 0 — Locate the install root (do this BEFORE any edit)
 
-BMAD-Ralph installs either into the project (`.claude/`) or globally
-(`~/.claude/`). Every path below is relative to the install root, so resolve it
-first — editing `.claude/commands/…` from a global install silently writes to a
-directory that doesn't exist, or creates a shadow copy that never runs:
+BMAD-Ralph installs either into the project (`.claude/`) or globally (`~/.claude/`). Every
+path below is relative to the install root, so resolve it first — editing `.claude/skills/…`
+from a global install silently writes to a directory that doesn't exist, or creates a copy
+that never runs:
 
-1. `.claude/commands/br-config.md` exists → `ROOT=.claude` (project install)
-2. else `~/.claude/commands/br-config.md` exists → `ROOT=~/.claude` (global install)
-3. both exist → ask the user which one to change (project shadows global)
-4. neither → tell the user to re-run `install.sh`
+1. `.claude/skills/br-config/SKILL.md` exists → `ROOT=.claude` (project install)
+2. else `~/.claude/skills/br-config/SKILL.md` exists → `ROOT=~/.claude` (global install)
+3. neither → tell the user to re-run `install.sh`
+4. **both exist → the GLOBAL one is the one that runs.** For skills, personal overrides
+   project (the reverse of what most people expect). Say so, edit `~/.claude`, and mention
+   that the project copy is dead weight they can delete.
 
 ## Model Matrix — which model runs what
 
@@ -41,17 +43,17 @@ implementation is spec-following, not open-ended design):
 
 | Role | File whose frontmatter to edit | Default |
 |------|-------------------------------|---------|
-| `discover` | `$ROOT/commands/br-discover.md` | opus |
-| `plan` | `$ROOT/commands/br-plan.md` | opus |
-| `architect` | `$ROOT/commands/br-architect.md` | opus |
-| `sprint` | `$ROOT/commands/br-sprint.md` | opus |
-| `review` | `$ROOT/commands/br-review.md` | opus |
-| `auto` | `$ROOT/commands/br-auto.md` | opus |
-| `scope` | `$ROOT/commands/br-scope.md` | opus |
-| `build` | `$ROOT/commands/br-build.md` | sonnet |
-| `resume` | `$ROOT/commands/br-resume.md` | sonnet |
-| `fix` | `$ROOT/commands/br-fix.md` | sonnet |
-| `test` | `$ROOT/commands/br-test.md` | sonnet |
+| `discover` | `$ROOT/skills/br-discover/SKILL.md` | opus |
+| `plan` | `$ROOT/skills/br-plan/SKILL.md` | opus |
+| `architect` | `$ROOT/skills/br-architect/SKILL.md` | opus |
+| `sprint` | `$ROOT/skills/br-sprint/SKILL.md` | opus |
+| `review` | `$ROOT/skills/br-review/SKILL.md` | opus |
+| `auto` | `$ROOT/skills/br-auto/SKILL.md` | opus |
+| `scope` | `$ROOT/skills/br-scope/SKILL.md` | opus |
+| `build` | `$ROOT/skills/br-build/SKILL.md` | sonnet |
+| `resume` | `$ROOT/skills/br-resume/SKILL.md` | sonnet |
+| `fix` | `$ROOT/skills/br-fix/SKILL.md` | sonnet |
+| `test` | `$ROOT/skills/br-test/SKILL.md` | sonnet |
 | `dev` | `$ROOT/agents/br-developer.md` | sonnet |
 | `qa` | `$ROOT/agents/br-qa.md` | sonnet |
 

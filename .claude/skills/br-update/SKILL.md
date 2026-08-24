@@ -59,8 +59,10 @@ BMAD-RALPH UPDATE AVAILABLE
    ```
 
 2. Detect current install scope:
-   - If `.claude/commands/br.md` exists in current directory → project install
-   - If `~/.claude/commands/br.md` exists → global install
+   - If `.claude/skills/br/SKILL.md` exists in current directory → project install
+   - If `~/.claude/skills/br/SKILL.md` exists → global install
+   - Both → the global install is the one that runs (for skills, personal
+     overrides project); update it, and say the project copy is inert
    - If both → ask user which to update
 
 3. Re-run installer:

@@ -34,7 +34,11 @@ Log all results.
 
 ## Step 3: Code Review (4 Parallel Subagents)
 
-Launch 4 review subagents simultaneously (in ONE message), using `subagent_type: "br-qa"` — it is read-only and declares `permissionMode: bypassPermissions` in its frontmatter, so reviews run without prompts:
+Launch 4 review subagents simultaneously (in ONE message), using `subagent_type: "br-qa"` — it declares `permissionMode: bypassPermissions` in its frontmatter, so reviews run without prompts.
+
+`br-qa` may write **one** thing: its own report under `.bmad-ralph/logs/review-*.md`.
+It must never touch source, tests, or config — not with `Write`, not with `Bash`.
+Repeat that constraint in each of the 4 prompts below.
 
 ### Agent 1: Correctness Review
 ```

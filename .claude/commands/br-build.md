@@ -13,7 +13,8 @@ Read the current sprint number from `current_sprint`.
 ## Mode Selection
 
 If `$ARGUMENTS` contains:
-- `auto` → Run ALL remaining sprints sequentially (pause between sprints for review)
+- `auto` → Run ALL remaining sprints sequentially, running the quality gate yourself between
+  sprints (see **Auto Mode Loop** below). Stops on the first gate that is not a clean PASS.
 - `story STORY-X.Y` → Run only a specific story
 - `parallel` → Run parallel-group stories simultaneously with subagents
 - Nothing → Run the current sprint
@@ -134,11 +135,37 @@ After all stories attempted:
    - If merge conflicts → report them and ask the user to resolve manually
    - Update state: set phase to `REVIEW`, set this sprint's entry to `status: "COMPLETE"`
    - **Do NOT increment `current_sprint` here** — the review reads `sprint-<current>` to know what to review, and `/br-review` increments it after the quality gate PASSES. Incrementing in both places made the review analyze the wrong sprint and skip one entirely.
-   - Say: "Sprint <N> complete! Run `/br-review` for quality gate."
+   - In `auto` mode → go to **Auto Mode Loop**. Otherwise say: "Sprint <N> complete! Run `/br-review` for quality gate."
 3. If some stories were ESCALATED:
    - Still merge what was completed (partial merge is OK)
    - List the escalated stories
-   - Say: "Sprint <N> partially complete. <X> stories escalated. Run `/br-review` to assess, or `/br-build story STORY-X.Y` to retry specific stories."
+   - In `auto` mode → go to **Auto Mode Loop** (the gate is where escalations get triaged).
+     Otherwise say: "Sprint <N> partially complete. <X> stories escalated. Run `/br-review` to assess, or `/br-build story STORY-X.Y` to retry specific stories."
+
+## Auto Mode Loop
+
+Only in `auto` mode. `current_sprint` is advanced by `/br-review` and by nothing else
+(`br-build` deliberately never touches it), so chaining sprints means **running the gate
+yourself** — otherwise `auto` re-runs the same sprint forever.
+
+After Phase 3 has set `phase` to `REVIEW`:
+
+1. Record `current_sprint` as `SPRINT_BEFORE`.
+2. **Run the quality gate**: invoke the `br-review` skill (Skill tool) — same behavior as
+   the user typing `/br-review`. Do not re-implement the review inline.
+3. Re-read `.bmad-ralph/state.json` and branch on what the gate actually wrote:
+   - `phase` is `DONE` → the project is finished. Report and stop.
+   - `phase` is `EXECUTE` **and** `current_sprint` > `SPRINT_BEFORE` → gate PASSED, go back
+     to Phase 0 for the next sprint.
+   - Anything else (`quality_gate` is `CONDITIONAL` or `FAIL`, or `phase` moved to
+     `ARCHITECT` / `SPRINT_PREP`) → **stop the loop**. Print the gate's decision, the
+     critical issues, and the command the user should run next. Never "fix and continue"
+     on your own after a failed gate — that decision is the user's.
+4. **Anti-spin guard**: if `current_sprint` did not change and `phase` is still `EXECUTE`,
+   stop and say so — one more pass would redo the same sprint. Never run more iterations
+   than `total_sprints`.
+
+At the end of the loop, report per sprint: stories completed, escalations, gate score.
 
 ## Escalation Protocol
 

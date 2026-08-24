@@ -1,6 +1,7 @@
 ---
 name: br-init
 description: "Initialize a BMAD-Ralph project — sets up state, directories, and config"
+argument-hint: "<description du projet entre guillemets>"
 ---
 
 # BMAD-Ralph Initialization
@@ -69,6 +70,7 @@ Write `.bmad-ralph/state.json` with this structure:
     "current_attempt": 0
   },
   "deliverables": {
+    "brief": ".bmad-ralph/docs/brief.md",
     "business_brief": null,
     "prd": null,
     "architecture": null,
@@ -87,30 +89,39 @@ Write `.bmad-ralph/state.json` with this structure:
 }
 ```
 
-## Step 4: Create Project Brief Template
+## Step 4: Write the Project Brief (filled in, not a blank template)
 
-Write `.bmad-ralph/docs/brief-template.md`:
+Write `.bmad-ralph/docs/brief.md` — **already filled** from `$ARGUMENTS`, the detected
+stack, and the codebase scan of Step 2. An empty template helps nobody: `/br-discover`
+reads this file, and placeholders read as facts to a research agent.
+
+Fill what you can actually support, and tag every line the way discovery does:
+`[FACT — source]` for anything you read from the repo or the description,
+`[ASSUMPTION]` for a reasonable inference, `[UNKNOWN]` for what you cannot determine.
+An `[UNKNOWN]` is a research question for `/br-discover`, and that is a useful output —
+an invented answer is not.
 
 ```markdown
 # Project Brief: <name>
 
 ## Vision
-<What is this project? What problem does it solve?>
+<derived from $ARGUMENTS — what this is and what problem it solves>
 
 ## Target Users
-<Who will use this? What are their pain points?>
+<[UNKNOWN] if the description doesn't say — do not invent personas here,
+that is the discovery agent's job>
 
 ## Core Features (MVP)
-<List the must-have features for v1>
+<the features literally implied by $ARGUMENTS, nothing more>
 
 ## Success Criteria
-<How do we know this is done and working?>
+<[UNKNOWN] unless stated>
 
 ## Constraints
-<Budget, timeline, tech constraints, etc.>
+<[FACT] the detected stack, existing conventions, CI, test setup from Step 2>
 
 ## Out of Scope
-<What are we explicitly NOT building?>
+<[UNKNOWN] unless stated>
 ```
 
 ## Step 5: Install CLAUDE.md
@@ -148,7 +159,12 @@ third-party packages — that is the user's call, not the initializer's.
 
 Display the detected project info and ask the user to:
 1. Confirm or correct the tech stack
-2. Fill in the project brief (or provide a description)
+2. Answer whatever `brief.md` marked `[UNKNOWN]` (target users, success criteria,
+   constraints, out of scope) — or say "skip", in which case those stay `[UNKNOWN]`
 3. Decide if this is a new project, new feature, or refactor
+
+**Write the answers back into `.bmad-ralph/docs/brief.md`**, replacing the matching
+`[UNKNOWN]` lines and tagging them `[FACT — user]`. A brief that stays in the chat is a
+brief that discovery never sees.
 
 Then tell them: "Run `/br-discover` to start the discovery phase, or `/br-auto` to run all planning phases automatically."

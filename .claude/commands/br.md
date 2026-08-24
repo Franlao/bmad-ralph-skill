@@ -1,6 +1,7 @@
 ---
 name: br
 description: "BMAD-Ralph Orchestrator - Build entire features/projects from A to Z"
+argument-hint: "[status | auto | skip | reset]"
 ---
 
 # BMAD-Ralph Super Skill — Main Orchestrator
@@ -13,10 +14,14 @@ You manage a **state machine** stored in `.bmad-ralph/state.json`. Every decisio
 
 ### State Machine Phases:
 ```
-INIT → DISCOVER → PLAN → ARCHITECT → SPRINT_PREP → EXECUTE → REVIEW → [next sprint or DONE]
-                                                       ↑          |
-                                                       └──────────┘ (quality gate failed)
+(no state.json) --/br-init--> DISCOVER → PLAN → ARCHITECT → SPRINT_PREP → EXECUTE → REVIEW → [next sprint or DONE]
+                                                                              ↑          |
+                                                                              └──────────┘ (quality gate failed)
 ```
+
+`INIT` is not a value of `phase` — `/br-init` writes `DISCOVER` straight away. "INIT"
+means the state file does not exist yet. The six working phases are DISCOVER, PLAN,
+ARCHITECT, SPRINT_PREP, EXECUTE, REVIEW; `DONE` is terminal.
 
 ## Your First Action
 
@@ -26,7 +31,7 @@ Based on the current phase, guide the user:
 
 | Phase | What to do | Command |
 |-------|-----------|---------|
-| `INIT` | Project not initialized | `/br-init <description>` |
+| _(no state.json)_ | Project not initialized | `/br-init <description>` |
 | `DISCOVER` | Run business/technical discovery | `/br-discover` |
 | `PLAN` | Generate PRD from discovery | `/br-plan` |
 | `ARCHITECT` | Design system architecture | `/br-architect` |
@@ -54,7 +59,7 @@ When showing status, read `.bmad-ralph/state.json` and display:
 ║          BMAD-RALPH STATUS                   ║
 ╠══════════════════════════════════════════════╣
 ║ Project: <name>                              ║
-║ Phase:   <current_phase> (<phase_number>/7)  ║
+║ Phase:   <current_phase> (<phase_number>/6)  ║
 ║ Sprint:  <current_sprint>/<total_sprints>    ║
 ║ Stories: <done>/<total> completed             ║
 ║ Ralph:   <iteration>/<max> iterations        ║

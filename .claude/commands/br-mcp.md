@@ -1,6 +1,8 @@
 ---
 name: br-mcp
 description: "Install and configure MCP servers — context7, playwright, DB, linting, and more"
+argument-hint: "[list | status | add <name> | remove <name> | minimal | all]"
+disable-model-invocation: true
 ---
 
 # BMAD-Ralph MCP Manager

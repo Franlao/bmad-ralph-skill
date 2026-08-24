@@ -1,6 +1,7 @@
 ---
 name: br-logs
 description: "View BMAD-Ralph logs — monitor, errors, sprint activity"
+argument-hint: "[all | tail | monitor | errors | sprint N | review N | escalations]"
 ---
 
 # BMAD-Ralph Log Viewer

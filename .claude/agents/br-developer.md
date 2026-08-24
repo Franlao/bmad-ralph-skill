@@ -1,7 +1,10 @@
 ---
 name: br-developer
 description: "BMAD-Ralph Developer Agent — Implements stories autonomously following architecture specs"
-tools: Read, Write, Edit, Bash, Glob, Grep, Agent
+# No `tools:` on purpose — an agent without it inherits every tool available to
+# subagents. An explicit allowlist silently dropped the todo tool (required by
+# Phase 0) and WebFetch/MCP (required by Phase 1b), and tool names drift between
+# Claude Code versions. The guard hook remains the safety net.
 model: sonnet
 permissionMode: bypassPermissions
 maxTurns: 50

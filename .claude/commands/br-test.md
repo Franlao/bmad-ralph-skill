@@ -1,6 +1,8 @@
 ---
 name: br-test
 description: "Run tests — auto-detect framework, show results, track coverage"
+argument-hint: "[coverage | watch | story STORY-X.Y | sprint N]"
+model: sonnet
 ---
 
 # BMAD-Ralph Test Runner

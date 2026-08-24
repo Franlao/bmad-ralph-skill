@@ -1,6 +1,8 @@
 ---
 name: br-update
 description: "Update BMAD-Ralph skill from GitHub — pull latest and re-install"
+argument-hint: "[check | changelog]"
+disable-model-invocation: true
 ---
 
 # BMAD-Ralph Updater

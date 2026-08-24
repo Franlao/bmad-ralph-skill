@@ -64,7 +64,7 @@ stories will import these; if they're not written down, parallel stories
 will each invent their own and the merge will break>
 
 ### Rollback
-If this story fails after 3 attempts:
+If this story trips the circuit breaker (`ralph.circuit_breaker_threshold` failures):
 - <what to revert>
 - <escalation note for architect>
 ```
@@ -117,7 +117,10 @@ Stories in the same parallel group can be executed simultaneously by Ralph using
 
 ## Ralph Prompt Generation
 
-For EACH sprint, also generate `.bmad-ralph/prompts/ralph-sprint-<N>.md`:
+For EACH sprint, also generate `.bmad-ralph/prompts/ralph-sprint-<N>.md`. Substitute
+`<threshold>` below with the value of `ralph.circuit_breaker_threshold` read from
+`.bmad-ralph/state.json` at generation time — do not write a literal 3 into the prompt,
+the value is configurable and a stale copy makes `/br-config circuit-breaker` a no-op.
 
 ```markdown
 # Ralph Prompt — Sprint <N>
@@ -136,8 +139,10 @@ You run as the `br-developer` agent, whose definition declares `permissionMode: 
    b. Implement exactly as specified
    c. Run the verification command
    d. If verification passes → git commit with message "feat(sprint-<N>): STORY-<N.M> <title>"
-   e. If verification fails → read the error, fix it, retry (max 3 times per story)
-3. If a story fails 3 times → write "ESCALATE: STORY-<N.M>" and move to the next story
+   e. If verification fails → read the error, fix it, retry (up to `<threshold>` times per story)
+3. If a story fails `<threshold>` times → write "ESCALATE: STORY-<N.M>" and move to the next story
+   (`<threshold>` = `ralph.circuit_breaker_threshold`, read from `.bmad-ralph/state.json`;
+   it is user-configurable via `/br-config circuit-breaker <N>` — re-read it, never assume 3)
 4. After ALL stories → run the Sprint Verification command
 5. When sprint is fully complete and verified → write "SPRINT_<N>_COMPLETE"
 

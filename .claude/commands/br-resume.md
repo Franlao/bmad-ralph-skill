@@ -1,6 +1,7 @@
 ---
 name: br-resume
 description: "Intelligently resume a BMAD-Ralph project from where it left off"
+model: sonnet
 ---
 
 # BMAD-Ralph Smart Resume
@@ -62,7 +63,8 @@ This is the most common resume case. Smart detection:
 
 Resume action:
 - If partially implemented story → attempt to verify it, commit if passing
-- If pending stories remain → continue Ralph loop from next pending story
+- If pending stories remain → continue the Ralph loop from the next pending story,
+  delegating each story to `br-developer` exactly as `/br-build` Phase 2 does
 - If all stories done → advance to REVIEW
 
 ### If REVIEW

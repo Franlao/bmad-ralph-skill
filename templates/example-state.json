@@ -38,6 +38,7 @@
     "current_attempt": 1
   },
   "deliverables": {
+    "brief": ".bmad-ralph/docs/brief.md",
     "business_brief": ".bmad-ralph/docs/business-brief.md",
     "prd": ".bmad-ralph/docs/prd.md",
     "architecture": ".bmad-ralph/docs/architecture.md",

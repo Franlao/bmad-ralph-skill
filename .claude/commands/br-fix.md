@@ -1,6 +1,9 @@
 ---
 name: br-fix
 description: "Auto-fix detected issues — repair state, retry failed stories, clean up"
+argument-hint: "[state | clean | retry STORY-X.Y | rewrite STORY-X.Y]"
+disable-model-invocation: true
+model: sonnet
 ---
 
 # BMAD-Ralph Auto-Fix
@@ -52,7 +55,8 @@ When a story was escalated or failed:
    - **Wrong file path** → fix the story instructions, retry
    - **Architecture gap** → amend architecture, then retry
    - **Impossible with current stack** → rewrite story, ask user
-4. If auto-fixable: apply the fix, re-run the story implementation, verify
+4. If auto-fixable: apply the fix, then re-run the story through `br-developer`
+   (same delegation as `/br-build` Phase 2 — never implement it inline here), verify
 5. If not auto-fixable: explain what needs human decision
 
 ### Fix 4: Rewrite a Story

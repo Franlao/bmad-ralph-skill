@@ -42,7 +42,6 @@ If `.bmad-ralph/state.json` doesn't exist:
 
 ### Phase 5: Sprint Preparation
 - Break architecture into sprint stories
-- Generate Ralph prompts for each sprint
 - **Show**: Number of sprints, stories per sprint, parallel groups
 
 ### STOP HERE — Human Checkpoint

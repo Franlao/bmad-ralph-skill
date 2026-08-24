@@ -55,8 +55,9 @@ When a story was escalated or failed:
    - **Wrong file path** → fix the story instructions, retry
    - **Architecture gap** → amend architecture, then retry
    - **Impossible with current stack** → rewrite story, ask user
-4. If auto-fixable: apply the fix, then re-run the story through `br-developer`
-   (same delegation as `/br-build` Phase 2 — never implement it inline here), verify
+4. If auto-fixable: apply the fix, then re-run the story through `br-developer` under the
+   `br-ralph-protocol` skill (same delegation as `/br-build` Phase 2 — never implement it
+   inline here), verify
 5. If not auto-fixable: explain what needs human decision
 
 ### Fix 4: Rewrite a Story

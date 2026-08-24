@@ -115,47 +115,6 @@ Mark stories that have NO dependencies on each other with:
 
 Stories in the same parallel group can be executed simultaneously by Ralph using multiple subagents.
 
-## Ralph Prompt Generation
-
-For EACH sprint, also generate `.bmad-ralph/prompts/ralph-sprint-<N>.md`. Substitute
-`<threshold>` below with the value of `ralph.circuit_breaker_threshold` read from
-`.bmad-ralph/state.json` at generation time — do not write a literal 3 into the prompt,
-the value is configurable and a stale copy makes `/br-config circuit-breaker` a no-op.
-
-```markdown
-# Ralph Prompt — Sprint <N>
-
-## Your Mission
-You are implementing Sprint <N> of the <project_name> project.
-Read `.bmad-ralph/sprints/sprint-<N>.md` for the full story list.
-
-## Permissions
-You run as the `br-developer` agent, whose definition declares `permissionMode: bypassPermissions` — fully autonomous, no user prompts.
-
-## Rules
-1. Implement stories IN ORDER (respect dependencies)
-2. For each story:
-   a. Read the story instructions carefully
-   b. Implement exactly as specified
-   c. Run the verification command
-   d. If verification passes → git commit with message "feat(sprint-<N>): STORY-<N.M> <title>"
-   e. If verification fails → read the error, fix it, retry (up to `<threshold>` times per story)
-3. If a story fails `<threshold>` times → write "ESCALATE: STORY-<N.M>" and move to the next story
-   (`<threshold>` = `ralph.circuit_breaker_threshold`, read from `.bmad-ralph/state.json`;
-   it is user-configurable via `/br-config circuit-breaker <N>` — re-read it, never assume 3)
-4. After ALL stories → run the Sprint Verification command
-5. When sprint is fully complete and verified → write "SPRINT_<N>_COMPLETE"
-
-## Progress Tracking
-Check git log to see which stories are already committed.
-Skip stories that already have a commit message matching their ID.
-
-## Current Project State
-- Tech stack: <from state.json>
-- Architecture: read .bmad-ralph/docs/architecture.md
-- Previous sprints: <list of completed sprints>
-```
-
 ## After Completion
 
 1. Update `.bmad-ralph/state.json`:

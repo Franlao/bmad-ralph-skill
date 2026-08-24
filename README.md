@@ -121,7 +121,6 @@ INIT → DISCOVER → PLAN → ARCHITECT → SPRINT_PREP → EXECUTE → REVIEW 
   - Commande de verification
   - Criteres d'acceptation
 - Detecte les stories parallelisables
-- Genere les prompts Ralph pour chaque sprint
 - Produit : `.bmad-ralph/sprints/sprint-N.md`
 
 #### 6. EXECUTE (`/br-build`)
@@ -362,9 +361,6 @@ INIT → DISCOVER → PLAN → ARCHITECT → SPRINT_PREP → EXECUTE → REVIEW 
 ├── sprints/
 │   ├── sprint-1.md             Stories du sprint 1
 │   ├── sprint-2.md             Stories du sprint 2
-│   └── ...
-├── prompts/
-│   ├── ralph-sprint-1.md       Prompt Ralph pour sprint 1
 │   └── ...
 └── logs/
     ├── monitor.log             Activite en temps reel (auto)

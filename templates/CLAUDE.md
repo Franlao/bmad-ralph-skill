@@ -32,7 +32,6 @@
 ## File Structure
 - `.bmad-ralph/docs/` — planning documents (brief, PRD, architecture)
 - `.bmad-ralph/sprints/` — sprint story files with implementation instructions
-- `.bmad-ralph/prompts/` — Ralph execution prompts (auto-generated)
 - `.bmad-ralph/logs/` — execution logs, reviews, escalations (gitignored)
 
 ## Agent Permissions

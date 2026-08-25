@@ -119,9 +119,31 @@ For each component:
 - Permission model
 
 ## 7. Error Handling Strategy
-- Error types and codes
+
+For EACH error type, its **trigger set** — what actually produces it — not just its name:
+
+| Error type | Triggers (exhaustive) | What the user sees | Where it is raised |
+
+**A trigger is an observable condition you could write a test for**: "the file does not
+parse as JSON", "a numeric field holds NaN or infinity", "the top-level value is not an
+object", "the amount has more than 2 decimals". Restating the error's own name — "corrupted
+JSON", "invalid input" — is not a trigger, it is the same open class with extra columns.
+
+Then two answers that are not optional:
+
+- **The default.** What happens to anything that belongs to no trigger set. "It propagates
+  as a bug" is a valid answer if you write it and say why. "Unspecified" is not an answer.
+- **The boundary.** Which layer converts an unexpected exception into a specified error,
+  and which layer must never swallow one.
+
 - Global error handler pattern
 - User-facing error messages
+
+<Naming an error without listing what triggers it leaves the class open, and an open class
+is the most expensive defect this pipeline has: the quality gate can only ever discover
+instances, one per cycle. A real run spent four gate rounds on four faces of "hostile input
+reaches a parser" because the design said "corrupted JSON => StorageError" and never said
+what corrupted means.>
 
 ## 7b. Configuration & Environment
 - EVERY env var the app needs: name, purpose, example value, where it's read
@@ -136,6 +158,25 @@ JWT_SECRET or DATABASE_URL was never specified anywhere.>
 - Integration test patterns (example)
 - E2E test approach
 - Minimum coverage target
+
+## 8b. Structural Constraints (executable wherever possible)
+
+The invariants the code must keep: no runtime dependency outside <X>, no import from layer
+N+1 into layer N, no direct database access outside the repository layer, every public
+function typed.
+
+For each one, state **how it is checked**, and prefer a command to a convention:
+
+| Constraint | How it is checked (exact command) | Where it runs |
+
+A grep, an AST script, a lint rule, an import-linter config, a test — anything that exits
+non-zero when the constraint breaks. If a constraint genuinely cannot be checked
+automatically, say so and say why; that is a decision, not an omission.
+
+<A constraint nothing verifies erodes over a dozen stories — that decay is measured, not
+suspected — while a constraint with a command behind it either holds or fails the sprint
+verification. A real run of this pipeline shipped "zero runtime dependencies, enforced by an
+AST guard": that is the shape to aim for.>
 
 ## 9. File Dependency Graph
 Show which files import from which, so Ralph can implement them in the RIGHT ORDER (dependencies first).
@@ -167,6 +208,11 @@ After writing the architecture, validate it by checking:
 - [ ] The testing strategy covers all critical paths
 - [ ] Auth is specified for every protected resource
 - [ ] Every env var / secret any component reads is declared in section 7b
+- [ ] **Every error type in section 7 lists its triggers, and the default for everything
+      outside those trigger sets is written down.** An error named without its triggers is
+      an open class, and the gate will discover it one instance per cycle.
+- [ ] **Every structural constraint in section 8b carries a check command**, or a written
+      reason why it cannot have one
 - [ ] Every library referenced actually exists in the dependency manifest (or is listed as "to install")
 - [ ] Existing codebase patterns are reused — not replaced without justification
 - [ ] **Every entry of the "Comportements observés du runtime" table in

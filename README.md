@@ -79,6 +79,10 @@ INIT → DISCOVER → PLAN → ARCHITECT → SPRINT_PREP → EXECUTE → REVIEW 
 
 #### 1. INIT (`/br-init "description"`)
 - Detecte automatiquement le tech stack (package.json, Cargo.toml, etc.)
+- **Lance** les commandes de test/lint/typecheck et enregistre celles qui marchent
+  vraiment dans `state.json` — toutes les phases suivantes les reutilisent au lieu de
+  redeviner. Un `pytest` du PATH peut pointer vers un autre environnement que
+  `python3 -m pytest` : le pipeline ne s'en apercevrait jamais
 - Analyse le codebase existant
 - Cree le dossier `.bmad-ralph/` et le fichier d'etat
 - Redige `docs/brief.md` a partir de ta description, chaque ligne tagguee
@@ -89,7 +93,11 @@ INIT → DISCOVER → PLAN → ARCHITECT → SPRINT_PREP → EXECUTE → REVIEW 
 - Lance **4 agents en parallele** :
   - Analyse marche et utilisateurs
   - Analyse concurrentielle
-  - Faisabilite technique
+  - Faisabilite technique — **sonde le runtime reel** au lieu de citer la doc : elle
+    execute les valeurs du domaine (montants, dates, chaines, entrees vides) sur
+    l'interpreteur installe et consigne ce qui se passe vraiment. C'est ainsi qu'un test
+    reel a trouve que `NaN` passe le parsing `Decimal` et qu'une date ISO de semaine
+    renvoie silencieusement un autre jour
   - Analyse du codebase existant
 - Produit : `.bmad-ralph/docs/business-brief.md`
 

@@ -19,6 +19,13 @@ Run project tests with auto-detection of the test framework.
 
 ## Step 1: Detect Test Framework
 
+**First, read `toolchain` in `.bmad-ralph/state.json`.** If `toolchain.test` is set, it was
+verified by actually running it — use it and stop detecting. Re-detecting is how two phases
+end up running two different test binaries on the same project.
+
+Only if it is `null` (empty project, or init could run nothing yet), detect — and when you
+find a command that works, **write it back into `toolchain`** so nobody has to guess again.
+
 Check in order:
 
 ### JavaScript/TypeScript

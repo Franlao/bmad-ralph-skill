@@ -41,6 +41,30 @@ Before creating state, analyze the current project:
 4. Scan the directory structure to understand the architecture
 5. Check for existing tests, CI/CD, linting config
 
+## Step 2b: Verify the toolchain by RUNNING it
+
+Detection is a guess; a command that exited 0 is a fact. Every later phase needs to know
+how to test, lint and typecheck this project — today `/br-test`, `/br-build` and
+`/br-review` each re-guess it, and each can guess differently.
+
+**Run the candidates. Record what actually worked.**
+
+1. Identify the interpreter or runtime that will actually execute the code, and resolve it
+   (`python3 -c "import sys; print(sys.executable, sys.version)"`, `node -v`, `go version`).
+2. For each of test / lint / typecheck / build, run the candidate and look at the exit code
+   **and** the first lines of output.
+3. **Prefer the form bound to that interpreter** over the one on the PATH:
+   `python3 -m pytest` over `pytest`, `npx --no-install vitest` over a global `vitest`.
+   A bare name on the PATH can resolve to another environment entirely — a real run of this
+   pipeline found `which pytest` pointing at a different Python than `python3 -m pytest`,
+   and nothing downstream would have noticed.
+4. Write the verified commands into `state.json` under `toolchain`, with a `notes` line for
+   anything surprising you had to work around.
+
+**On an empty project there is nothing to run.** Leave the fields `null`, say so, and
+record them at the end of Sprint 1 — the walking skeleton is exactly the story that makes
+them real. Never write a command you have not seen exit.
+
 ## Step 3: Create State File
 
 Write `.bmad-ralph/state.json` with this structure:
@@ -69,6 +93,15 @@ Write `.bmad-ralph/state.json` with this structure:
     "max_gate_cycles": 3,
     "current_story": null,
     "current_attempt": 0
+  },
+  "toolchain": {
+    "runtime": "<resolved interpreter + version, or null>",
+    "test": "<verified command, or null>",
+    "lint": "<verified command, or null>",
+    "typecheck": "<verified command, or null>",
+    "build": "<verified command, or null>",
+    "verified_at": "<ISO timestamp, or null if nothing could be run yet>",
+    "notes": "<anything surprising: PATH shadowing, venv, monorepo scoping>"
   },
   "deliverables": {
     "brief": ".bmad-ralph/docs/brief.md",

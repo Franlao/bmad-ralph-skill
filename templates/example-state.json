@@ -40,6 +40,15 @@
     "current_story": "STORY-2.6",
     "current_attempt": 1
   },
+  "toolchain": {
+    "runtime": "node v20.11.1 (/usr/local/bin/node)",
+    "test": "npx --no-install vitest run",
+    "lint": "npx --no-install eslint .",
+    "typecheck": "npx --no-install tsc --noEmit",
+    "build": "npm run build",
+    "verified_at": "2026-03-12T10:04:00Z",
+    "notes": "vitest global absent du PATH — forme npx --no-install retenue"
+  },
   "deliverables": {
     "brief": ".bmad-ralph/docs/brief.md",
     "business_brief": ".bmad-ralph/docs/business-brief.md",

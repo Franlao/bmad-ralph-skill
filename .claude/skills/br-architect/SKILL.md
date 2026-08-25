@@ -169,6 +169,11 @@ After writing the architecture, validate it by checking:
 - [ ] Every env var / secret any component reads is declared in section 7b
 - [ ] Every library referenced actually exists in the dependency manifest (or is listed as "to install")
 - [ ] Existing codebase patterns are reused — not replaced without justification
+- [ ] **Every entry of the "Comportements observés du runtime" table in
+      `discovery-technical.md` is either handled by the design or dismissed in writing
+      with a reason.** These were measured on the real interpreter, not assumed. A trap that was
+      found and then designed around is worth more than the whole document; a trap that was
+      found and silently ignored is worse than never having probed.
 
 ## Expert Panel Review (parallel persona subagents)
 

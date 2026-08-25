@@ -23,10 +23,14 @@ Read:
 
 ## Step 2: Run Verification Suite
 
+Use the commands recorded in `state.json` under `toolchain` — verified by running them at
+init, not guessed here. A gate that runs a different linter than the loop did is measuring
+another project.
+
 Execute in order:
-1. **Build check**: Run the project build command
-2. **Type check**: Run typecheck (tsc, mypy, etc.)
-3. **Lint check**: Run linter
+1. **Build check**: `toolchain.build`
+2. **Type check**: `toolchain.typecheck`
+3. **Lint check**: `toolchain.lint`
 4. **Test suite**: Run all tests
 5. **Coverage check**: Check test coverage if configured
 

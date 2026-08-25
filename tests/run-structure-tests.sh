@@ -145,6 +145,23 @@ grep -q 'FACT — observé' .claude/skills/br-discover/SKILL.md    || missing="$
 grep -q 'Comportements observés du runtime' .claude/skills/br-architect/SKILL.md || missing="${missing} br-architect(n'exige pas leur traitement)"
 check "runtime sondé, observations traitées par l'architecture" "$missing"
 
+# 13 — a story that only describes the happy path leaves the implementer to invent one
+#      answer per occurrence, and the gate then finds them one cycle at a time.
+missing=""
+grep -q 'Failure behaviour (REQUIRED' .claude/skills/br-plan/SKILL.md || missing="${missing} br-plan(champ non obligatoire)"
+grep -q 'only describes the happy path is incomplete' .claude/skills/br-plan/SKILL.md || missing="${missing} br-plan(règle absente des quality rules)"
+check "comportement d'échec exigé par user story" "$missing"
+
+# 14 — an error named without its triggers is an open class; a constraint nothing runs
+#      erodes over a sprint. Both must be closed in the design, not at the gate.
+missing=""
+grep -q 'trigger set' .claude/skills/br-architect/SKILL.md      || missing="${missing} br-architect(§7 sans déclencheurs)"
+grep -q '\*\*The default\.\*\*' .claude/skills/br-architect/SKILL.md || missing="${missing} br-architect(§7 sans défaut explicite)"
+grep -q '## 8b. Structural Constraints' .claude/skills/br-architect/SKILL.md || missing="${missing} br-architect(pas de §8b)"
+grep -q 'carries a check command' .claude/skills/br-architect/SKILL.md || missing="${missing} br-architect(checklist n'exige pas de commande)"
+grep -q 'section 8b' .claude/skills/br-sprint/SKILL.md          || missing="${missing} br-sprint(§8b hors vérification de sprint)"
+check "classes d'erreur fermées, contraintes exécutables" "$missing"
+
 echo ""
 if [ "$FAILED" -gt 0 ]; then
     printf "${RED}%d failed${NC}, %d passed\n" "$FAILED" "$PASSED"

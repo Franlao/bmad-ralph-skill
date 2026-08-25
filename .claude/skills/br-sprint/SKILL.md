@@ -96,8 +96,12 @@ Write each sprint to `.bmad-ralph/sprints/sprint-<N>.md`:
 ## Sprint Verification
 After all stories complete, run:
 ```bash
-<comprehensive verification command — build + lint + test>
+<comprehensive verification command — build + lint + test, plus every check command
+listed in architecture section 8b (Structural Constraints)>
 ```
+The 8b checks belong here, not at the review: a structural constraint verified only at the
+quality gate is verified a whole sprint too late, once a dozen stories have already drifted
+away from it.
 
 ## Sprint Completion Criteria
 - [ ] All stories implemented

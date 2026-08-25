@@ -105,6 +105,9 @@ INIT → DISCOVER → PLAN → ARCHITECT → SPRINT_PREP → EXECUTE → REVIEW 
 - Agent Product Manager qui genere un PRD complet
 - User stories avec priorites (P0/P1/P2)
 - Criteres d'acceptation pour chaque story
+- **Comportement en cas d'echec obligatoire** par story : entree invalide, absente, echec
+  en cours de route. Une story qui ne decrit que le chemin heureux n'est pas finie —
+  c'est la partie de la spec que tout le monde saute et que les agents gerent le plus mal
 - Estimation du nombre de sprints
 - Produit : `.bmad-ralph/docs/prd.md`
 
@@ -114,6 +117,13 @@ INIT → DISCOVER → PLAN → ARCHITECT → SPRINT_PREP → EXECUTE → REVIEW 
 - Schema de base de donnees exact
 - Endpoints API avec types
 - Configuration & variables d'environnement (`.env.example`)
+- **Strategie d'erreur fermee** : chaque erreur liste ses declencheurs observables et le
+  document dit ce qui arrive a tout le reste. Nommer une erreur sans dire ce qui la
+  declenche laisse la classe ouverte, et la porte de qualite ne peut alors decouvrir
+  qu'une instance par cycle
+- **Contraintes structurelles exécutables** : chaque invariant porte sa commande de
+  verification, lancee des la verification de sprint — une contrainte que rien ne verifie
+  s'erode sur une douzaine de stories
 - Graphe de dependances entre fichiers (ordre d'implementation)
 - Strategie de test
 - **Panel d'experts** : le brouillon est challenge par des personas paralleles

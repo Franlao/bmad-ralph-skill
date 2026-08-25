@@ -46,8 +46,20 @@ For each feature, write user stories in format:
 - Acceptance Criteria:
   - [ ] AC1
   - [ ] AC2
+- Failure behaviour (REQUIRED — a story that only describes the happy path is not finished):
+  - Invalid input → <what the system does, and what the user sees>
+  - Missing or empty input → <same>
+  - The operation fails midway → <what state the system is left in>
 - Priority: P0 (must-have) | P1 (should-have) | P2 (nice-to-have)
 - Estimated Complexity: S | M | L | XL
+
+"Not applicable — this story takes no external input" is a valid and expected answer, the
+same right-sizing rule the discovery and the review follow. Silence is not.
+
+This field exists because of a measured failure: a real run of this pipeline burned four
+quality-gate cycles on four faces of one defect — hostile input reaching a parser — none of
+which any user story had ever described. Behaviour under error and edge conditions is the
+part of a spec engineers skip and agents handle worst on their own.
 
 ## 4. Functional Requirements
 ### 4.1 Core Features (P0)
@@ -105,6 +117,11 @@ the answer is yes for every remaining one.
   "fast and responsive" is not. Same for NFRs — give numbers or drop the claim.
 - **Acceptance criteria must be checkable by a program or a test** — prefer
   Given/When/Then. "Works correctly" is not a criterion.
+- **A criterion that only describes the happy path is incomplete.** Wherever the input can
+  be invalid, absent or hostile, the corresponding behaviour is a criterion in its own
+  right, verifiable like the others — not a detail left to the implementer. An implementer
+  left to decide invents one answer per occurrence, and the quality gate then discovers
+  them one cycle at a time.
 - **Assumptions carried from discovery**: if the brief tagged something
   [ASSUMPTION] and the PRD depends on it, restate it in section 9 (Risks) —
   don't silently launder an assumption into a requirement.

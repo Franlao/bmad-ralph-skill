@@ -94,7 +94,7 @@ Read `.bmad-ralph/logs/sprint-<N>.log` and display all entries with:
 - Duration between entries (to spot slow stories)
 
 ### "escalations"
-Read all `escalation-STORY-*.md` files and display:
+Read all `escalation-STORY-*.md` **and `gate-escalation-sprint-*.md`** files and display:
 - Story name and description
 - Number of attempts
 - Root cause

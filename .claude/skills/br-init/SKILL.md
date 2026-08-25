@@ -66,6 +66,7 @@ Write `.bmad-ralph/state.json` with this structure:
     "max_iterations_per_story": 5,
     "max_iterations_per_sprint": 40,
     "circuit_breaker_threshold": 3,
+    "max_gate_cycles": 3,
     "current_story": null,
     "current_attempt": 0
   },

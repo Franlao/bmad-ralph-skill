@@ -74,6 +74,19 @@ Show the progress bar for stories based on completion percentage.
 ║  Circuit Breaker: OK (1/3 failures)                       ║
 ```
 
+## If in REVIEW phase, also show the gate state:
+
+```
+║  QUALITY GATE STATUS                                      ║
+║                                                           ║
+║  Gate cycle:     2 / 3                                    ║
+║  Open classes:   hostile input → uncaught exception (x2)  ║
+║                  → next cycle routes to ARCHITECT         ║
+```
+
+A class at its second cycle is the signal that matters here: it means the next round
+will not produce fix stories but an architecture amendment.
+
 ## Also list any escalated stories:
 
 ```

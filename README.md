@@ -140,9 +140,16 @@ INIT → DISCOVER → PLAN → ARCHITECT → SPRINT_PREP → EXECUTE → REVIEW 
   - Securite (OWASP, injection, auth)
   - Performance (N+1, memory leaks, indexes)
   - Conformite architecture
+- Les relecteurs sont **dimensionnes au type de projet** (CLI, web, API, batch) : sur un
+  CLI local personne ne cherche du XSS, on lit la strategie d'erreur de l'architecture
+- Chaque constat est trie : **VIOLATION** (le code enfreint une exigence ecrite → story de
+  correction) ou **LACUNE** (l'exigence manque → amendement d'architecture, jamais une
+  story). Une lacune traitee comme un bug revient au gate suivant sous un autre visage
+- Chaque constat nomme sa **classe**, pas son instance. Une classe vue deux fois part en
+  ARCHITECT avec mandat de la fermer
 - Note globale : A/B/C/D/F
-- Decision : PASS / CONDITIONAL_PASS / FAIL
-- Si FAIL → genere des stories de correction et relance
+- Decision : PASS / CONDITIONAL_PASS / FAIL / ESCALATED
+- Si FAIL → stories de correction pour les violations, amendement pour les lacunes
 
 ---
 
@@ -440,6 +447,9 @@ Chaque story reussie = un commit git. Si Ralph deraille, tu peux toujours reveni
 - Circuit breaker : **3 echecs consecutifs** sur une story → escalation (la limite qui declenche en pratique)
 - Max **5 tentatives par story** — plafond dur, utile seulement si tu montes le circuit breaker au-dela
 - Max **40 iterations par sprint** — au-dela → pause et rapport
+- Max **3 cycles de quality gate** sur un meme sprint → escalation. Le pendant du
+  circuit breaker, mais au niveau de la porte : un test reel a enchaine quatre revues
+  sur quatre visages du meme defaut sans qu'aucune borne n'existe.
 - Tout est configurable via `/br-config`
 
 ---

@@ -26,7 +26,9 @@
       "stories_total": 8,
       "stories_completed": 5,
       "status": "IN_PROGRESS",
-      "quality_gate": null
+      "quality_gate": null,
+      "gate_cycles": 0,
+      "defect_classes": []
     }
   ],
   "ralph": {
@@ -34,6 +36,7 @@
     "max_iterations_per_story": 5,
     "max_iterations_per_sprint": 40,
     "circuit_breaker_threshold": 3,
+    "max_gate_cycles": 3,
     "current_story": "STORY-2.6",
     "current_attempt": 1
   },

@@ -126,7 +126,8 @@ Stories in the same parallel group can be executed simultaneously by Ralph using
      and `/br-rollback` all read and update these:
      ```json
      { "id": <N>, "theme": "<theme>", "stories_total": <count>,
-       "stories_completed": 0, "status": "PENDING", "quality_gate": null }
+       "stories_completed": 0, "status": "PENDING", "quality_gate": null,
+       "gate_cycles": 0, "defect_classes": [] }
      ```
    - Update `deliverables.sprint_stories` with file paths
    - Set `metrics.stories_total` to the total number of implementation stories

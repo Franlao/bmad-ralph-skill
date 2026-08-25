@@ -17,6 +17,7 @@ View and modify BMAD-Ralph settings without editing files manually.
 - `$ARGUMENTS` = `max-iterations <N>` → max retries per story (default: 5)
 - `$ARGUMENTS` = `max-sprint-iterations <N>` → max total iterations per sprint (default: 40)
 - `$ARGUMENTS` = `circuit-breaker <N>` → failures before escalation (default: 3)
+- `$ARGUMENTS` = `max-gate-cycles <N>` → quality-gate rounds on one sprint before escalation (default: 3)
 - `$ARGUMENTS` = `guard add "<pattern>"` → add a protected file pattern
 - `$ARGUMENTS` = `guard list` → show protected patterns
 - `$ARGUMENTS` = `reset` → reset all settings to defaults
@@ -110,7 +111,8 @@ BMAD-RALPH CONFIGURATION
 
   Max iterations/story:   5
   Max iterations/sprint:  40
-  Circuit breaker:        3 failures
+  Circuit breaker:        3 failures on one story
+  Max gate cycles:        3 review rounds on one sprint
 
   Guard protected patterns (matched on the BASENAME, not the path):
     .env, .env.*, *.env   — except *.example/*.sample/*.template/*.dist
@@ -167,7 +169,8 @@ the frontmatter change (restart it) or the model isn't available on your plan.
 
 ## Change Iteration Limits
 
-When `$ARGUMENTS` = `max-iterations <N>` or `max-sprint-iterations <N>` or `circuit-breaker <N>`:
+When `$ARGUMENTS` = `max-iterations <N>` or `max-sprint-iterations <N>` or
+`circuit-breaker <N>` or `max-gate-cycles <N>`:
 
 1. Validate: N must be a positive integer
 2. Read `.bmad-ralph/state.json`
@@ -175,6 +178,7 @@ When `$ARGUMENTS` = `max-iterations <N>` or `max-sprint-iterations <N>` or `circ
    - `max-iterations` → `ralph.max_iterations_per_story`
    - `max-sprint-iterations` → `ralph.max_iterations_per_sprint`
    - `circuit-breaker` → `ralph.circuit_breaker_threshold`
+   - `max-gate-cycles` → `ralph.max_gate_cycles`
 4. Write updated state.json
 5. Display the change
 
@@ -200,6 +204,7 @@ When `$ARGUMENTS` = `reset`:
    - `ralph.max_iterations_per_story` = 5
    - `ralph.max_iterations_per_sprint` = 40
    - `ralph.circuit_breaker_threshold` = 3
+   - `ralph.max_gate_cycles` = 3
 2. Reset models to the Model Matrix defaults (opus for the planning/judgment
    phases, sonnet for execution, no override anywhere else)
 3. Display: "All settings reset to defaults."

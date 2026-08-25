@@ -27,6 +27,7 @@
 - Never modify `.env`, credential, or key files
 - The br-guard.sh hook blocks dangerous operations automatically
 - Circuit breaker: `ralph.circuit_breaker_threshold` failures on same story (default 3) triggers escalation — read the value from state.json, it's configurable
+- Gate circuit breaker: `ralph.max_gate_cycles` review rounds on the same sprint (default 3) triggers escalation — a defect class that survives two gates is an architecture gap, not a fix story
 - Max iterations per sprint: `ralph.max_iterations_per_sprint` (default 40) — pause and report if reached
 
 ## File Structure

@@ -32,6 +32,30 @@ Execute in order:
 
 Log all results.
 
+## Step 2.5: Right-size the review to this project
+
+`/br-discover` and `/br-architect` already classify the project before working; the review
+must too. A checklist written for a web application produces noise on a CLI — and, worse,
+hides the checks that actually matter for it.
+
+1. **Classify** from `state.json` (`project.tech_stack`, `project.type`) and the
+   architecture: local CLI / library, web application, HTTP API / service, data or batch
+   processing.
+2. **Say which dimensions do not apply**, in one line. "Not applicable" is a valid and
+   expected answer — the rest of the pipeline is allowed to say it, the review must be too.
+   A reviewer hunting XSS in a local CLI is a reviewer not reading the error strategy.
+3. **Derive the checkpoints from the architecture**: its error strategy (§7), its
+   Configuration & Environment inventory (§7b), its NFRs. The architecture is what this
+   project promised; that is what the review measures against. The table below is a
+   starting point, not a ceiling.
+
+| Project class | Security looks at | Performance looks at |
+|---------------|-------------------|----------------------|
+| CLI / library | file permissions, path traversal, unsafe deserialization, secrets in argv or env, hostile input reaching a parser | startup cost, memory on large inputs, O(n²) on user-grown data |
+| Web application | XSS, CSRF, auth and authz on every route, session handling, input validation | N+1, missing indexes, payload size, unnecessary re-renders |
+| HTTP API / service | authn/authz per endpoint, injection, rate limiting, error message leakage | N+1, indexes, connection pooling, serialization cost |
+| Data / batch | injection into queries, PII handling, trust boundary of the input | streaming vs load-all, memory ceiling, per-row work |
+
 ## Step 3: Code Review (4 Parallel Subagents)
 
 Launch 4 review subagents simultaneously (in ONE message), using `subagent_type: "br-qa"` — it declares `permissionMode: bypassPermissions` in its frontmatter, so reviews run without prompts.
@@ -54,26 +78,32 @@ Write findings to .bmad-ralph/logs/review-correctness-sprint-<N>.md
 ### Agent 2: Security Review
 ```
 Review all files changed in this sprint (use git diff).
-Check for:
-- SQL injection vulnerabilities
-- XSS possibilities
-- Authentication/authorization gaps
-- Secrets in code
-- Input validation gaps
-- OWASP Top 10 issues
+
+Check the dimensions selected in Step 2.5 for this project class — and write
+"not applicable" for the ones that don't, instead of inventing a finding to fill a line.
+
+Applicable whatever the class:
+- secrets in code, in argv, or in logs
+- input validation wherever external data enters the program
+- the architecture's error strategy (§7) actually honored: an input the spec calls
+  invalid must produce the specified error, not an uncaught exception
+Then add the class-specific checks from the Step 2.5 table.
 Write findings to .bmad-ralph/logs/review-security-sprint-<N>.md
 ```
 
 ### Agent 3: Performance Review
 ```
 Review all files changed in this sprint.
-Check for:
-- N+1 query patterns
-- Missing database indexes
-- Memory leaks (unclosed resources)
-- Unnecessary re-renders (React)
-- Missing caching opportunities
-- Large payload sizes
+
+Check the dimensions selected in Step 2.5 for this project class, and the NFRs the
+architecture actually states. A performance finding with no number and no stated
+requirement behind it is an opinion — leave it out.
+
+Applicable whatever the class:
+- resources closed and disposed
+- no work that grows superlinearly with user-grown data
+- no unbounded "fetch everything" on data that grows
+Then add the class-specific checks from the Step 2.5 table.
 Write findings to .bmad-ralph/logs/review-performance-sprint-<N>.md
 ```
 
@@ -120,6 +150,39 @@ The score is therefore derived mechanically from the evidence:
 **Every issue must carry evidence: `file:line` + one sentence of what happens.**
 An issue without a location and a failure mode gets dropped, not reported.
 
+### Every issue is a VIOLATION or a LACUNE — and they route differently
+
+Severity says how bad an issue is. This says **who has to fix it**, and it is the whole
+difference between closing a defect and chasing it.
+
+One question per issue: **which line of the PRD or the architecture does this violate?**
+
+- You can quote it → **VIOLATION**. The code broke a written requirement. It becomes a fix
+  story and the sprint stays in `EXECUTE`.
+- You cannot quote it → **LACUNE**. The code did what was specified; it is the
+  specification that is missing or too vague. It becomes an **architecture amendment**,
+  phase `ARCHITECT`. **Never a fix story.**
+
+A fix story closes the instance you happened to see. A LACUNE dressed as a fix story is
+how the same defect comes back wearing a new face at the next gate cycle — and the cycle
+after that.
+
+### Name the class, not the instance
+
+For every issue, write the **class** it belongs to, not just where you found it:
+"hostile input reaches a parser and raises instead of producing the specified error",
+not "the amount 1e400 crashes the report".
+
+Record the classes in `state.json`, in this sprint's entry:
+`defect_classes: [{ "class": "<one line>", "cycles_seen": <n>, "status": "OPEN|CLOSED" }]`.
+A class already listed gets `cycles_seen` incremented rather than a second entry.
+
+**A class seen in two gate cycles stops producing fix stories.** It goes to `ARCHITECT`
+with an explicit mandate: close the class, not today's instance. The report must then name
+at least one form of that class that has **not** been observed yet and would still be open
+if only today's findings were fixed. If you cannot name one, you have not found the class
+yet — you are still looking at instances.
+
 **Anti-rubber-stamp check:** if the four review agents collectively found zero
 critical issues and fewer than 3 warnings, do not conclude "clean sprint" —
 explicitly list what was checked and verify the two riskiest stories yourself
@@ -145,8 +208,11 @@ After all agents complete, read all 4 review documents, apply the rubric, and cr
 - Stories fully verified: <X>/<Y>
 - Criteria unverifiable (and why): <list or "none">
 
+## Defect Classes (this cycle)
+<class — VIOLATION or LACUNE — cycles seen — for a LACUNE, one form not yet observed>
+
 ## Critical Issues (must fix before next sprint)
-<file:line — what happens — which story>
+<file:line — what happens — which story — VIOLATION (quote the requirement) or LACUNE>
 
 ## Warnings (should fix)
 <file:line — what happens>
@@ -157,10 +223,26 @@ After all agents complete, read all 4 review documents, apply the rubric, and cr
 ## Escalated Stories
 <stories that failed circuit breaker — need architect attention>
 
-## Quality Gate Decision: PASS / FAIL / CONDITIONAL_PASS
+## Gate cycle: <n> / <max_gate_cycles>
+
+## Quality Gate Decision: PASS / FAIL / CONDITIONAL_PASS / ESCALATED
 ```
 
 ## Step 5: Quality Gate Decision
+
+### First: count this cycle
+
+Increment this sprint's `gate_cycles` in `state.json`, and read `ralph.max_gate_cycles`
+(default 3, configurable via `/br-config max-gate-cycles <N>`).
+
+**If `gate_cycles` ≥ `max_gate_cycles`, stop here whatever the score.** There is a circuit
+breaker per story; this is its counterpart at the gate, and it exists because four cycles
+chasing four faces of one defect is a real observed failure, not a hypothesis.
+
+Write `.bmad-ralph/logs/gate-escalation-sprint-<N>.md`: every open defect class, what was
+attempted at each cycle, and which specification is missing. Set this sprint's
+`quality_gate` to `"ESCALATED"`, leave `phase` at `REVIEW`, and hand back to the user with
+the one decision that would unblock it. Never open cycle N+1 on your own.
 
 ### PASS (Score A or B, no critical issues)
 1. Update state:
@@ -176,8 +258,11 @@ After all agents complete, read all 4 review documents, apply the rubric, and cr
    - If last sprint: "PROJECT COMPLETE! All sprints implemented and reviewed."
 
 ### CONDITIONAL_PASS (Score C, minor issues)
-1. Generate fix stories, append them to the current sprint file (continue the
-   story numbering: STORY-<N>.<last+1>, with files, instructions, acceptance
+0. **Split the issues first.** Only VIOLATIONs become fix stories. Any LACUNE — and any
+   class already seen at a previous cycle — goes to `ARCHITECT` instead; if the sprint has
+   both, route to `ARCHITECT` and let the amended architecture regenerate what it needs.
+1. Generate fix stories for the VIOLATIONs, append them to the current sprint file
+   (continue the story numbering: STORY-<N>.<last+1>, with files, instructions, acceptance
    criteria, and a verification command — same format as regular stories)
 2. Update state:
    - Set phase back to `EXECUTE` (same sprint, do NOT increment `current_sprint`)
@@ -188,11 +273,14 @@ After all agents complete, read all 4 review documents, apply the rubric, and cr
 ### FAIL (Score D or F, critical issues)
 1. Increment `metrics.quality_gate_failures` and set this sprint's entry to
    `quality_gate: "FAIL"` and `status: "IN_PROGRESS"`
-2. Analyze if the failure is:
-   - **Implementation issue** → Generate fix stories (same bookkeeping as
-     CONDITIONAL_PASS), stay in EXECUTE for same sprint
-   - **Architecture issue** → Set phase to `ARCHITECT` with a note about what needs redesigning
-   - **Story issue** → Set phase to `SPRINT_PREP` to rewrite problematic stories
+2. Route by the nature of the issues, not by their number:
+   - **Only VIOLATIONs** → fix stories (same bookkeeping as CONDITIONAL_PASS), stay in
+     `EXECUTE` for the same sprint
+   - **Any LACUNE, or any class at its second cycle** → `ARCHITECT`, with the mandate
+     written out: which class to close, and which unobserved form of it must also be
+     covered by the amendment
+   - **The stories themselves are wrong** (instructions or verification command unable to
+     express the requirement) → `SPRINT_PREP` to rewrite them
 3. Say: "Quality gate FAILED. <reason>. Recommended action: <what to do>."
 
 ## Step 6: Handle Escalations

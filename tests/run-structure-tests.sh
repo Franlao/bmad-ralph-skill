@@ -92,6 +92,38 @@ else
     fail "protocole trop long (${lines} lignes) — il est injecté à chaque story"
 fi
 
+# 8 — the gate circuit breaker exists end to end: a threshold nobody stores and
+#     nobody can change is a comment, not a limit. Four unbounded gate cycles on
+#     one sprint is the observed failure this guards.
+missing=""
+grep -q 'max_gate_cycles' .claude/skills/br-init/SKILL.md   || missing="${missing} br-init(gabarit d'état)"
+grep -q 'max_gate_cycles' templates/example-state.json      || missing="${missing} example-state.json"
+grep -q 'max-gate-cycles' .claude/skills/br-config/SKILL.md || missing="${missing} br-config(argument)"
+grep -q 'ralph.max_gate_cycles' .claude/skills/br-config/SKILL.md || missing="${missing} br-config(champ visé)"
+grep -q 'max_gate_cycles' .claude/skills/br-review/SKILL.md || missing="${missing} br-review(lecture du seuil)"
+check "disjoncteur de porte câblé partout" "$missing"
+
+# 9 — a finding that cannot cite the requirement it breaks is a spec gap, and a
+#     spec gap routed to a fix story is how one defect returns under four faces.
+missing=""
+grep -q 'VIOLATION' .claude/skills/br-review/SKILL.md || missing="${missing} pas de verdict VIOLATION"
+grep -q 'LACUNE'    .claude/skills/br-review/SKILL.md || missing="${missing} pas de verdict LACUNE"
+grep -q 'defect_classes' .claude/skills/br-review/SKILL.md || missing="${missing} classes de défauts non enregistrées"
+grep -q 'defect_classes' .claude/skills/br-sprint/SKILL.md || missing="${missing} entrée de sprint sans defect_classes"
+check "constats triés violation/lacune et classés" "$missing"
+
+# 10 — the review checklist must not be hardwired for the web: the same rule the
+#      discovery and the architect panel already follow.
+if grep -q 'Right-size the review' .claude/skills/br-review/SKILL.md; then
+    if grep -qE '^- (SQL injection vulnerabilities|XSS possibilities|N\+1 query patterns)$' .claude/skills/br-review/SKILL.md; then
+        fail "br-review garde une liste web figée dans un prompt de relecteur"
+    else
+        ok "revue dimensionnée au type de projet"
+    fi
+else
+    fail "br-review n'a pas de règle de dimensionnement"
+fi
+
 echo ""
 if [ "$FAILED" -gt 0 ]; then
     printf "${RED}%d failed${NC}, %d passed\n" "$FAILED" "$PASSED"

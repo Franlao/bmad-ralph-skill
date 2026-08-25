@@ -45,7 +45,7 @@ For each `sprint-<N>.log`:
 - Detect patterns: same error repeated? same file failing?
 
 ### Escalation Files
-For each `escalation-STORY-*.md`:
+For each `escalation-STORY-*.md` and `gate-escalation-sprint-*.md`:
 - Show the story that was escalated
 - Show the root cause analysis
 - Show the recommendation

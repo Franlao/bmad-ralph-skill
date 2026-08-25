@@ -82,7 +82,28 @@ Analyze the project in .bmad-ralph/state.json and the existing codebase:
 - List required third-party dependencies
 - Read package.json/cargo.toml/pyproject.toml to know EXACTLY what is already installed
 - Use web search if you need current API docs or latest versions — never assume from memory
-Write your findings to .bmad-ralph/docs/discovery-technical.md
+
+PROBE THE RUNTIME — do not describe it, run it.
+Docs say what a library promises; the interpreter installed on THIS machine says what it
+does. Where they disagree, the interpreter wins, and the disagreement is exactly what
+breaks a story three sprints later.
+
+Take the values this project's domain actually handles — amounts, dates, identifiers,
+text, file paths, empty and absent inputs — and run them through the real runtime and the
+real libraries. One-liners are enough. Look for the silent cases: a value that parses when
+it should not, a function that returns a different type than expected, a format accepted
+with a meaning you did not intend, a tool on the PATH that is not the one that will run.
+
+Report each observation as `[FACT — observé]` with the exact command and its exact output.
+An observation you cannot reproduce with a pasted command does not go in.
+
+Write your findings to .bmad-ralph/docs/discovery-technical.md, with a required section:
+
+## Comportements observés du runtime
+| Ce qui a été tenté | Ce qui était attendu | Ce qui s'est passé | Conséquence pour la conception |
+
+If you ran probes and everything behaved as documented, say so — that is a useful result.
+An empty section means you did not probe.
 ```
 
 ### Agent 4: Existing Codebase Analysis (skip entirely on a greenfield project — an empty repo needs no codebase agent)
@@ -106,6 +127,10 @@ Write your findings to .bmad-ralph/docs/discovery-codebase.md
    - **User Personas** (from market research)
    - **Competitive Landscape** (from competitive analysis)
    - **Technical Assessment** (from feasibility study)
+   - **Contraintes du runtime observées** — recopier les `[FACT — observé]` de la section
+     « Comportements observés du runtime ». Ce sont les seules affirmations du brief qui
+     ont été mesurées ; elles doivent survivre jusqu'à l'architecture, pas rester dans une
+     annexe.
    - **Codebase Integration Points** (from codebase analysis)
    - **Risks & Mitigations**
    - **Recommended Approach**

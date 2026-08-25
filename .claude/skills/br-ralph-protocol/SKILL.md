@@ -53,7 +53,9 @@ patterns (imports, naming, error handling) instead of inventing new ones. Before
 any helper, Grep the codebase for an existing one *by concept, not just by name* —
 duplicating a helper is a bug, not a style issue, because the copies will diverge.
 
-**E — Verify.** Run the story's Verification Command. Then run lint and typecheck **even
+**E — Verify.** Run the story's Verification Command. For lint and typecheck, use the
+commands recorded in `state.json` under `toolchain` — they were verified by running them,
+your memory of the project's conventions was not. Run them **even
 if it passed**, detecting the commands from `package.json` scripts or project config
 (`ruff`, `cargo clippy`, `mypy`, ...). Fix what they report; never skip or suppress.
 

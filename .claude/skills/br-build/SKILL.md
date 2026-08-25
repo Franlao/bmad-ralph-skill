@@ -135,6 +135,10 @@ After each story (pass or fail), update the state file:
 
 After all stories attempted:
 
+0. **If `toolchain` is still null** (greenfield project — init had nothing to run), fill it
+   now: the walking skeleton exists, so run test / lint / typecheck / build, record the
+   commands that actually exited, and write them into `state.json`. Every later sprint and
+   the quality gate read them instead of guessing.
 1. Run the **Sprint Verification** command from the sprint file (full build + lint + test)
 2. If ALL pass:
    - Log: `[<timestamp>] SPRINT-<N> ✓ COMPLETE`

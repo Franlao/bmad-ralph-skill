@@ -124,6 +124,27 @@ else
     fail "br-review n'a pas de règle de dimensionnement"
 fi
 
+# 11 — the toolchain is established once by running it, then consumed. Three phases
+#      re-detecting independently is how the gate ends up linting with another binary
+#      than the loop did.
+missing=""
+grep -q 'Step 2b' .claude/skills/br-init/SKILL.md        || missing="${missing} br-init(pas d'étape de vérification)"
+grep -q '"toolchain"' .claude/skills/br-init/SKILL.md    || missing="${missing} br-init(absent du gabarit d'état)"
+grep -q '"toolchain"' templates/example-state.json       || missing="${missing} example-state.json"
+for f in br-test br-review br-build; do
+    grep -q 'toolchain' ".claude/skills/$f/SKILL.md" || missing="${missing} $f(ne le consomme pas)"
+done
+grep -q 'toolchain' .claude/skills/br-ralph-protocol/SKILL.md || missing="${missing} protocole(ne le consomme pas)"
+check "chaîne d'outils constatée puis réutilisée" "$missing"
+
+# 12 — discovery probes the real runtime instead of quoting docs, and what it observes
+#      has to reach the design: a trap found and silently dropped is worse than no probe.
+missing=""
+grep -q 'PROBE THE RUNTIME' .claude/skills/br-discover/SKILL.md || missing="${missing} br-discover(pas de sonde)"
+grep -q 'FACT — observé' .claude/skills/br-discover/SKILL.md    || missing="${missing} br-discover(pas de tag observé)"
+grep -q 'Comportements observés du runtime' .claude/skills/br-architect/SKILL.md || missing="${missing} br-architect(n'exige pas leur traitement)"
+check "runtime sondé, observations traitées par l'architecture" "$missing"
+
 echo ""
 if [ "$FAILED" -gt 0 ]; then
     printf "${RED}%d failed${NC}, %d passed\n" "$FAILED" "$PASSED"
